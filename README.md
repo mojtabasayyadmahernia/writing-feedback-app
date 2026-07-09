@@ -1,0 +1,1 @@
+# A SFL-based Writing Feedback App Prototype\n\nThis is a prototype of a Windows desktop application designed to provide real-time feedback during the writing process. It detects pauses in typing activity and give real-time SFL-based feedbacks to writers.
