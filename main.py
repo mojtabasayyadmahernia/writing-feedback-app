@@ -1,4 +1,5 @@
 import tkinter as tk
+import random
 
 class WritingFeedbackApp:
     def __init__(self):
@@ -8,8 +9,19 @@ class WritingFeedbackApp:
         self.root.configure(bg="#2c3e50")
 
         # Configuration
-        self.pause_duration = 5000  # milliseconds
-        self.feedback_message = "SFL-Based Feedback Based on Pause Location"
+        self.pause_duration = 10000  # 10 seconds
+        
+        # New: List of feedback messages
+        self.messages = [
+            "You've paused. Keep writing!",
+            "What happens next?",
+            "Don't think, just type.",
+            "Describe the scene in more detail.",
+            "Keep the flow going!",
+            "Just one more sentence...",
+            "Don't worry about quality, just quantity for now.",
+            "What is the character feeling right now?"
+        ]
 
         # Header
         header = tk.Label(
@@ -22,7 +34,7 @@ class WritingFeedbackApp:
         )
         header.pack(side="top", fill="x")
 
-        # Feedback label (always packed, starts invisible)
+        # Feedback label (starts invisible)
         self.feedback_label = tk.Label(
             self.root,
             text="",
@@ -69,34 +81,26 @@ class WritingFeedbackApp:
         )
         self.status_bar.pack(side="bottom", fill="x")
 
-        # Timer ID
         self.timer_id = None
-
-        # Bind key press
         self.text_area.bind("<Key>", self.on_key_press)
-
-        # Focus the text area on launch
         self.text_area.focus_set()
 
     def on_key_press(self, event):
-        """Called every time a key is pressed."""
-        # Hide feedback by clearing text and matching background
+        # Hide feedback
         self.feedback_label.config(text="", bg="#2c3e50", pady=0)
-
-        # Update status bar
         self.status_bar.config(text="Writing...")
 
-        # Cancel previous timer
         if self.timer_id is not None:
             self.root.after_cancel(self.timer_id)
 
-        # Start new timer
         self.timer_id = self.root.after(self.pause_duration, self.on_pause_detected)
 
     def on_pause_detected(self):
-        """Called when pause duration passes without a key press."""
+        # New: Pick a random message from the list
+        selected_message = random.choice(self.messages)
+        
         self.feedback_label.config(
-            text=self.feedback_message,
+            text=selected_message,
             bg="#e74c3c",
             pady=8
         )
