@@ -1,2 +1,4 @@
-# No external dependencies required.
-# Tkinter is included with Python's standard library.
+spacy>=3.7.0
+
+# After installing the above, run this command in your terminal:
+# python -m spacy download en_core_web_sm
