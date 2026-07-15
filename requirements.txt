@@ -1,4 +1,5 @@
 spacy>=3.7.0
+wordfreq>=3.0.0
 
-# After installing the above, run this command in your terminal:
+# After installing the above, also run:
 # python -m spacy download en_core_web_sm

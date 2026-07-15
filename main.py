@@ -3,6 +3,7 @@ import random
 import time
 from datetime import datetime
 import spacy
+import wordfreq
 
 class WritingFeedbackApp:
     def __init__(self):
@@ -27,6 +28,29 @@ class WritingFeedbackApp:
         self.total_pause_time = 0.0
         self.pause_count = 0
 
+        # Frequency threshold for word recognition (4+ char words)
+        self.WORD_FREQ_THRESHOLD = 1e-5
+
+        # Curated whitelist of common short words (1-3 chars)
+        self.COMMON_SHORT_WORDS = {
+            'a', 'i', 'an', 'as', 'at', 'be', 'by', 'do', 'go', 'he',
+            'if', 'in', 'is', 'it', 'me', 'my', 'no', 'of', 'on', 'or',
+            'so', 'to', 'up', 'us', 'we', 'am', 'are', 'was', 'the', 'and',
+            'but', 'for', 'not', 'you', 'all', 'can', 'her', 'his', 'how',
+            'its', 'may', 'now', 'our', 'out', 'own', 'say', 'she', 'too',
+            'two', 'use', 'way', 'who', 'did', 'get', 'has', 'had', 'him',
+            'let', 'man', 'new', 'old', 'see', 'try', 'yet', 'one', 'any',
+            'few', 'far', 'off', 'set', 'put', 'run', 'ask', 'add', 'big',
+            'end', 'why', 'age', 'ago', 'air', 'act', 'arm', 'art', 'bay',
+            'bed', 'bit', 'box', 'boy', 'bus', 'buy', 'car', 'cut', 'day',
+            'dog', 'ear', 'eat', 'eye', 'fit', 'fly', 'fun', 'god', 'got',
+            'gun', 'guy', 'hit', 'hot', 'job', 'key', 'kid', 'law', 'lay',
+            'led', 'leg', 'lie', 'low', 'map', 'mix', 'mom', 'net', 'nor',
+            'pay', 'per', 'pop', 'pot', 'raw', 'red', 'rid', 'row', 'sat',
+            'sea', 'sit', 'six', 'sky', 'son', 'sun', 'tax', 'ten', 'tie',
+            'tip', 'top', 'toy', 'via', 'war', 'win', 'won', 'yes', 'yet',
+        }
+
         # Feedback messages
         self.messages = [
             "Keep writing!",
@@ -50,7 +74,7 @@ class WritingFeedbackApp:
 
         tk.Label(
             header_frame,
-            text="Prototype v0.3",
+            text="Prototype v0.4",
             font=("Arial", 9),
             fg="#7f8c8d",
             bg="#1a252f"
@@ -235,6 +259,20 @@ class WritingFeedbackApp:
         self.pauses_label.config(text=f"Pauses: {self.pause_count}")
         self.status_label.config(text=state)
 
+    def is_real_word(self, word):
+        """Return True if the word is a recognized English word."""
+        if not word or not word.isalpha():
+            return False
+        lower = word.lower()
+        # 1-2 char words: only accept from the curated whitelist
+        if len(lower) <= 2:
+            return lower in self.COMMON_SHORT_WORDS
+        # 3-char words: accept if in whitelist OR frequency is high enough
+        if len(lower) == 3:
+            return lower in self.COMMON_SHORT_WORDS or wordfreq.word_frequency(lower, 'en') >= self.WORD_FREQ_THRESHOLD
+        # 4+ char words: use frequency threshold
+        return wordfreq.word_frequency(lower, 'en') >= self.WORD_FREQ_THRESHOLD
+
     def analyze_linguistic_context(self, text):
         """
         Analyze the text up to the cursor position and determine
@@ -249,7 +287,7 @@ class WritingFeedbackApp:
         if not text or text.isspace():
             return "sentence_boundary"
 
-        ends_with_space = text[-1].isspace()
+        # Strip trailing whitespace for analysis
         stripped = text.rstrip()
 
         if not stripped:
@@ -265,17 +303,21 @@ class WritingFeedbackApp:
         if last_char in ',;:':
             return "phrase_boundary"
 
-        # If text does NOT end with space, we're mid-word
-        if not ends_with_space:
-            return "mid_word"
-
-        # Text ends with space — use spaCy to determine boundary type
+        # Parse the stripped text with spaCy
         doc = self.nlp(stripped)
 
         if len(doc) == 0:
             return "word_boundary"
 
         last_token = doc[-1]
+
+        # Check if the last token is a complete, recognized word.
+        # This handles both "my test[pause]" and "my test [pause]" correctly.
+        if not self.is_real_word(last_token.text):
+            return "mid_word"
+
+        # The last token IS a real word. Now determine if it's a phrase
+        # boundary or just a word boundary using dependency parsing.
 
         # Check if the last token is the final token in a noun chunk
         for chunk in doc.noun_chunks:
@@ -301,9 +343,9 @@ class WritingFeedbackApp:
         """Return a human-readable message for the boundary type."""
         messages = {
             "sentence_boundary": "Pause is at a sentence boundary",
-            "phrase_boundary": "Pause is at a phrase boundary",
-            "word_boundary": "Pause is at a word boundary",
-            "mid_word": "Pause is at a mid-word position",
+            "phrase_boundary":   "Pause is at a phrase boundary",
+            "word_boundary":     "Pause is at a word boundary",
+            "mid_word":          "Pause is at a mid-word position",
         }
         return messages.get(boundary_type, "Unknown boundary")
 
@@ -311,9 +353,9 @@ class WritingFeedbackApp:
         """Return a color for the boundary type label."""
         colors = {
             "sentence_boundary": "#27ae60",
-            "phrase_boundary": "#f39c12",
-            "word_boundary": "#3498db",
-            "mid_word": "#e74c3c",
+            "phrase_boundary":   "#f39c12",
+            "word_boundary":     "#3498db",
+            "mid_word":          "#e74c3c",
         }
         return colors.get(boundary_type, "#bdc3c7")
 
