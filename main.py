@@ -273,48 +273,67 @@ class WritingFeedbackApp:
         # 4+ char words: use frequency threshold
         return wordfreq.word_frequency(lower, 'en') >= self.WORD_FREQ_THRESHOLD
 
+    # Mapping from spaCy coarse POS tags to human-readable labels
+    POS_LABELS = {
+        'NOUN':  'Noun',
+        'VERB':  'Verb',
+        'ADJ':   'Adjective',
+        'ADV':   'Adverb',
+        'PRON':  'Pronoun',
+        'DET':   'Determiner',
+        'ADP':   'Preposition',
+        'CONJ':  'Conjunction',
+        'CCONJ': 'Conjunction',
+        'SCONJ': 'Conjunction',
+        'NUM':   'Number',
+        'INTJ':  'Interjection',
+        'PROPN': 'Proper Noun',
+        'AUX':   'Auxiliary Verb',
+        'PART':  'Particle',
+    }
+
     def analyze_linguistic_context(self, text):
         """
         Analyze the text up to the cursor position and determine
         what kind of linguistic boundary the pause occurs at.
 
-        Returns one of:
-        - "sentence_boundary"
-        - "phrase_boundary"
-        - "word_boundary"
-        - "mid_word"
+        Returns a tuple: (boundary_type, pos_label)
+        - boundary_type: one of "sentence_boundary", "phrase_boundary",
+                         "word_boundary", "mid_word"
+        - pos_label: human-readable POS of the last word (only set for
+                     "word_boundary"; None for all other types)
         """
         if not text or text.isspace():
-            return "sentence_boundary"
+            return "sentence_boundary", None
 
         # Strip trailing whitespace for analysis
         stripped = text.rstrip()
 
         if not stripped:
-            return "sentence_boundary"
+            return "sentence_boundary", None
 
         last_char = stripped[-1]
 
         # Sentence boundary: ends with sentence-ending punctuation
         if last_char in '.!?':
-            return "sentence_boundary"
+            return "sentence_boundary", None
 
         # Phrase boundary: ends with phrase-separating punctuation
         if last_char in ',;:':
-            return "phrase_boundary"
+            return "phrase_boundary", None
 
         # Parse the stripped text with spaCy
         doc = self.nlp(stripped)
 
         if len(doc) == 0:
-            return "word_boundary"
+            return "word_boundary", None
 
         last_token = doc[-1]
 
         # Check if the last token is a complete, recognized word.
         # This handles both "my test[pause]" and "my test [pause]" correctly.
         if not self.is_real_word(last_token.text):
-            return "mid_word"
+            return "mid_word", None
 
         # The last token IS a real word. Now determine if it's a phrase
         # boundary or just a word boundary using dependency parsing.
@@ -323,24 +342,28 @@ class WritingFeedbackApp:
         for chunk in doc.noun_chunks:
             if last_token == chunk[-1]:
                 if last_token.dep_ in ('pobj', 'dobj', 'attr', 'iobj', 'oprd'):
-                    return "phrase_boundary"
+                    return "phrase_boundary", None
                 if last_token.dep_ in ('nsubj', 'nsubjpass'):
                     has_verb = any(t.pos_ == 'VERB' for t in doc if t != last_token)
                     if has_verb:
-                        return "phrase_boundary"
+                        return "phrase_boundary", None
 
         # Check dependency relations indicating phrase completion
         if last_token.dep_ in ('pobj', 'dobj', 'attr', 'acomp', 'oprd', 'iobj'):
-            return "phrase_boundary"
+            return "phrase_boundary", None
 
         # Check for adverbial phrases
         if last_token.dep_ == 'advmod' and last_token.head.pos_ == 'VERB':
-            return "phrase_boundary"
+            return "phrase_boundary", None
 
-        return "word_boundary"
+        # It's a word boundary — get the POS label for the last token
+        pos_label = self.POS_LABELS.get(last_token.pos_, last_token.pos_)
+        return "word_boundary", pos_label
 
-    def get_boundary_display_text(self, boundary_type):
+    def get_boundary_display_text(self, boundary_type, pos_label=None):
         """Return a human-readable message for the boundary type."""
+        if boundary_type == "word_boundary" and pos_label:
+            return f"Pause is at a word boundary  —  last word is a {pos_label}"
         messages = {
             "sentence_boundary": "Pause is at a sentence boundary",
             "phrase_boundary":   "Pause is at a phrase boundary",
@@ -399,8 +422,8 @@ class WritingFeedbackApp:
         text_before_cursor = self.text_area.get("1.0", cursor_pos)
 
         # Analyze linguistic context
-        boundary_type = self.analyze_linguistic_context(text_before_cursor)
-        boundary_text = self.get_boundary_display_text(boundary_type)
+        boundary_type, pos_label = self.analyze_linguistic_context(text_before_cursor)
+        boundary_text = self.get_boundary_display_text(boundary_type, pos_label)
         boundary_color = self.get_boundary_color(boundary_type)
 
         # Show encouragement message
@@ -419,7 +442,11 @@ class WritingFeedbackApp:
         )
 
         self.update_stats("Paused...")
-        self.write_log(f"Pause detected at {boundary_type} (threshold: {self.pause_duration // 1000}s)")
+        log_entry = f"Pause detected at {boundary_type}"
+        if pos_label:
+            log_entry += f" ({pos_label})"
+        log_entry += f" (threshold: {self.pause_duration // 1000}s)"
+        self.write_log(log_entry)
 
     def run(self):
         self.root.mainloop()
