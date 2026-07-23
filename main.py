@@ -104,7 +104,7 @@ class WritingFeedbackApp:
         self.threshold_entry = tk.Entry(
             settings_frame,
             textvariable=self.threshold_var,
-            width=4,
+            width=6,
             font=("Arial", 10),
             justify="center"
         )
@@ -150,16 +150,27 @@ class WritingFeedbackApp:
         )
         self.feedback_label.pack(side="top", fill="x")
 
-        # ===== BOUNDARY INFO LABEL =====
+        # ===== TIER 1: Structural boundary label =====
         self.boundary_label = tk.Label(
             self.root,
             text="",
-            font=("Arial", 11),
+            font=("Arial", 11, "bold"),
             fg="white",
             bg="#2c3e50",
             pady=0
         )
         self.boundary_label.pack(side="top", fill="x")
+
+        # ===== TIER 2: Transitivity role label =====
+        self.tier2_label = tk.Label(
+            self.root,
+            text="",
+            font=("Arial", 10, "italic"),
+            fg="#bdc3c7",
+            bg="#2c3e50",
+            pady=0
+        )
+        self.tier2_label.pack(side="top", fill="x")
 
         # ===== TEXT AREA =====
         text_frame = tk.Frame(self.root, bg="#2c3e50")
@@ -273,122 +284,189 @@ class WritingFeedbackApp:
         # 4+ char words: use frequency threshold
         return wordfreq.word_frequency(lower, 'en') >= self.WORD_FREQ_THRESHOLD
 
-    # Mapping from spaCy coarse POS tags to human-readable labels
-    POS_LABELS = {
-        'NOUN':  'Noun',
-        'VERB':  'Verb',
-        'ADJ':   'Adjective',
-        'ADV':   'Adverb',
-        'PRON':  'Pronoun',
-        'DET':   'Determiner',
-        'ADP':   'Preposition',
-        'CONJ':  'Conjunction',
-        'CCONJ': 'Conjunction',
-        'SCONJ': 'Conjunction',
-        'NUM':   'Number',
-        'INTJ':  'Interjection',
-        'PROPN': 'Proper Noun',
-        'AUX':   'Auxiliary Verb',
-        'PART':  'Particle',
+    # ── SFG: Tier 2 — Transitivity role mapping ──────────────────────────
+    DEP_TO_TRANSITIVITY = {
+        'nsubj':    'Participant (Actor/Senser/Carrier)',
+        'nsubjpass':'Participant (Goal — passive)',
+        'dobj':     'Participant (Goal/Phenomenon)',
+        'iobj':     'Participant (Recipient)',
+        'attr':     'Participant (Attribute)',
+        'pobj':     'Circumstance',
+        'advmod':   'Circumstance',
+        'acomp':    'Participant (Attribute)',
+        'oprd':     'Participant (Attribute)',
+        'ROOT':     'Process',
+        'aux':      'Process (auxiliary)',
+        'auxpass':  'Process (auxiliary — passive)',
+        'amod':     'Epithet (Qualifier)',
+        'nummod':   'Numerative',
+        'det':      'Deictic',
+        'poss':     'Possessive Deictic',
+        'compound': 'Classifier',
+        'prep':     'Circumstance (preposition)',
+        'cc':       'Conjunction',
+        'mark':     'Conjunction',
     }
 
+    POS_FALLBACK = {
+        'NOUN':  'Participant',
+        'PROPN': 'Participant (Proper noun)',
+        'PRON':  'Participant (Pronoun)',
+        'ADJ':   'Epithet',
+        'ADV':   'Circumstance',
+        'NUM':   'Numerative',
+        'DET':   'Deictic',
+        'ADP':   'Circumstance (preposition)',
+        'INTJ':  'Interjection',
+    }
+
+    # ── SFG: Tier 1 — Theme/Rheme structural position ────────────────────
+    def get_sfg_tier1(self, doc):
+        """
+        Determine where in the clause structure the pause falls.
+        Returns one of:
+        - 'pre_theme'            : No Subject or Finite written yet
+        - 'theme_rheme_boundary' : Subject written but no Finite yet
+        - 'within_rheme'         : Subject + Finite both present
+        """
+        has_finite = any(t.pos_ in ('VERB', 'AUX') for t in doc)
+        has_explicit_subject = any(t.dep_ in ('nsubj', 'nsubjpass', 'expl') for t in doc)
+        # ROOT noun/pronoun = implicit subject in incomplete clauses
+        # Guard against spaCy mislabelling determiners as PRON ROOT
+        has_root_nominal = any(
+            t.dep_ == 'ROOT' and
+            t.pos_ in ('NOUN', 'PROPN', 'PRON') and
+            t.tag_ not in ('DT', 'IN', 'CC')
+            for t in doc
+        )
+        has_subject = has_explicit_subject or has_root_nominal
+
+        if not has_subject and not has_finite:
+            return 'pre_theme'
+        if has_subject and not has_finite:
+            return 'theme_rheme_boundary'
+        return 'within_rheme'
+
+    # ── SFG: Tier 2 — Transitivity role of the last token ────────────────
+    def get_sfg_tier2(self, last_token):
+        """Return the SFG Transitivity role of the last token."""
+        if last_token.pos_ == 'VERB':
+            return 'Process'
+        if last_token.pos_ == 'AUX':
+            return 'Process (auxiliary)'
+        if last_token.dep_ == 'ROOT':
+            if last_token.pos_ in ('NOUN', 'PROPN', 'PRON'):
+               return 'Participant (Actor/Senser/Carrier — Process not yet written)'
+            return self.POS_FALLBACK.get(last_token.pos_, f'Unknown ({last_token.pos_})')
+        role = self.DEP_TO_TRANSITIVITY.get(last_token.dep_)
+        if role:
+            return role
+        return self.POS_FALLBACK.get(last_token.pos_, f'Unknown ({last_token.pos_})')
+
+    # ── Main analysis ─────────────────────────────────────────────────────
     def analyze_linguistic_context(self, text):
         """
-        Analyze the text up to the cursor position and determine
-        what kind of linguistic boundary the pause occurs at.
+        Analyze the text up to the cursor and determine the boundary type.
 
-        Returns a tuple: (boundary_type, pos_label)
-        - boundary_type: one of "sentence_boundary", "phrase_boundary",
-                         "word_boundary", "mid_word"
-        - pos_label: human-readable POS of the last word (only set for
-                     "word_boundary"; None for all other types)
+        Returns a tuple: (boundary_type, sfg_tier1, sfg_tier2)
+        - boundary_type : 'sentence_boundary' | 'phrase_boundary' |
+                          'word_boundary' | 'mid_word'
+        - sfg_tier1     : Tier 1 label (only for 'word_boundary'; else None)
+        - sfg_tier2     : Tier 2 label (only for 'word_boundary'; else None)
         """
         if not text or text.isspace():
-            return "sentence_boundary", None
+            return 'sentence_boundary', None, None
 
-        # Strip trailing whitespace for analysis
         stripped = text.rstrip()
-
         if not stripped:
-            return "sentence_boundary", None
+            return 'sentence_boundary', None, None
 
         last_char = stripped[-1]
 
-        # Sentence boundary: ends with sentence-ending punctuation
         if last_char in '.!?':
-            return "sentence_boundary", None
+            return 'sentence_boundary', None, None
 
-        # Phrase boundary: ends with phrase-separating punctuation
         if last_char in ',;:':
-            return "phrase_boundary", None
+            return 'phrase_boundary', None, None
 
-        # Parse the stripped text with spaCy
         doc = self.nlp(stripped)
-
         if len(doc) == 0:
-            return "word_boundary", None
+            return 'word_boundary', None, None
 
         last_token = doc[-1]
 
-        # Check if the last token is a complete, recognized word.
-        # This handles both "my test[pause]" and "my test [pause]" correctly.
         if not self.is_real_word(last_token.text):
-            return "mid_word", None
+            return 'mid_word', None, None
 
-        # The last token IS a real word. Now determine if it's a phrase
-        # boundary or just a word boundary using dependency parsing.
-
-        # Check if the last token is the final token in a noun chunk
+        # Check for phrase boundary (syntactic)
         for chunk in doc.noun_chunks:
             if last_token == chunk[-1]:
                 if last_token.dep_ in ('pobj', 'dobj', 'attr', 'iobj', 'oprd'):
-                    return "phrase_boundary", None
+                    return 'phrase_boundary', None, None
                 if last_token.dep_ in ('nsubj', 'nsubjpass'):
                     has_verb = any(t.pos_ == 'VERB' for t in doc if t != last_token)
                     if has_verb:
-                        return "phrase_boundary", None
+                        return 'phrase_boundary', None, None
 
-        # Check dependency relations indicating phrase completion
         if last_token.dep_ in ('pobj', 'dobj', 'attr', 'acomp', 'oprd', 'iobj'):
-            return "phrase_boundary", None
+            return 'phrase_boundary', None, None
 
-        # Check for adverbial phrases
         if last_token.dep_ == 'advmod' and last_token.head.pos_ == 'VERB':
-            return "phrase_boundary", None
+            return 'phrase_boundary', None, None
 
-        # It's a word boundary — get the POS label for the last token
-        pos_label = self.POS_LABELS.get(last_token.pos_, last_token.pos_)
-        return "word_boundary", pos_label
+        # Word boundary — run two-tier SFG analysis
+        tier1 = self.get_sfg_tier1(doc)
+        tier2 = self.get_sfg_tier2(last_token)
+        return 'word_boundary', tier1, tier2
 
-    def get_boundary_display_text(self, boundary_type, pos_label=None):
-        """Return a human-readable message for the boundary type."""
-        if boundary_type == "word_boundary" and pos_label:
-            return f"Pause is at a word boundary  —  last word is a {pos_label}"
+    # ── Display helpers ───────────────────────────────────────────────────
+    TIER1_DISPLAY = {
+        'pre_theme':            'Pre-Theme pause — clause not yet begun',
+        'theme_rheme_boundary': 'Theme\u2013Rheme boundary — Subject set, Process not yet written',
+        'within_rheme':         'Within-Rheme pause — clause in progress',
+    }
+
+    def get_boundary_display_text(self, boundary_type, tier1=None, tier2=None):
+        """Return the Tier 1 (structural) display string."""
+        if boundary_type == 'word_boundary' and tier1:
+            return self.TIER1_DISPLAY.get(tier1, tier1)
         messages = {
-            "sentence_boundary": "Pause is at a sentence boundary",
-            "phrase_boundary":   "Pause is at a phrase boundary",
-            "word_boundary":     "Pause is at a word boundary",
-            "mid_word":          "Pause is at a mid-word position",
+            'sentence_boundary': 'Clause boundary — clause appears complete',
+            'phrase_boundary':   'Pause is at a phrase boundary',
+            'word_boundary':     'Pause is at a word boundary',
+            'mid_word':          'Pause is at a mid-word position',
         }
-        return messages.get(boundary_type, "Unknown boundary")
+        return messages.get(boundary_type, 'Unknown boundary')
 
-    def get_boundary_color(self, boundary_type):
-        """Return a color for the boundary type label."""
+    def get_tier2_display_text(self, boundary_type, tier2=None):
+        """Return the Tier 2 (transitivity) display string."""
+        if boundary_type == 'word_boundary' and tier2:
+            return f'Last element: {tier2}'
+        return ''
+
+    def get_boundary_color(self, boundary_type, tier1=None):
+        """Return a color for the Tier 1 label."""
+        if boundary_type == 'word_boundary':
+            tier1_colors = {
+                'pre_theme':            '#8e44ad',
+                'theme_rheme_boundary': '#2980b9',
+                'within_rheme':         '#16a085',
+            }
+            return tier1_colors.get(tier1, '#3498db')
         colors = {
-            "sentence_boundary": "#27ae60",
-            "phrase_boundary":   "#f39c12",
-            "word_boundary":     "#3498db",
-            "mid_word":          "#e74c3c",
+            'sentence_boundary': '#27ae60',
+            'phrase_boundary':   '#f39c12',
+            'mid_word':          '#e74c3c',
         }
-        return colors.get(boundary_type, "#bdc3c7")
+        return colors.get(boundary_type, '#bdc3c7')
 
     def apply_settings(self):
         try:
-            value = int(self.threshold_var.get())
-            if value < 1 or value > 120:
-                self.settings_status.config(text="Use 1-120 seconds", fg="#e74c3c")
+            value = float(self.threshold_var.get())
+            if value < 0.5 or value > 120:
+                self.settings_status.config(text="Use 0.5-120 seconds", fg="#e74c3c")
                 return
-            self.pause_duration = value * 1000
+            self.pause_duration = int(value * 1000)
             self.settings_status.config(text=f"Set to {value}s", fg="#2ecc71")
             self.update_stats("Ready")
             self.write_log(f"Threshold changed to {value}s")
@@ -405,6 +483,7 @@ class WritingFeedbackApp:
         # Hide feedback and boundary labels
         self.feedback_label.config(text="", bg="#2c3e50", pady=0)
         self.boundary_label.config(text="", bg="#2c3e50", pady=0)
+        self.tier2_label.config(text="", bg="#2c3e50", pady=0)
 
         self.update_stats("Writing...")
 
@@ -422,11 +501,12 @@ class WritingFeedbackApp:
         text_before_cursor = self.text_area.get("1.0", cursor_pos)
 
         # Analyze linguistic context
-        boundary_type, pos_label = self.analyze_linguistic_context(text_before_cursor)
-        boundary_text = self.get_boundary_display_text(boundary_type, pos_label)
-        boundary_color = self.get_boundary_color(boundary_type)
+        boundary_type, tier1, tier2 = self.analyze_linguistic_context(text_before_cursor)
+        tier1_text  = self.get_boundary_display_text(boundary_type, tier1, tier2)
+        tier2_text  = self.get_tier2_display_text(boundary_type, tier2)
+        tier1_color = self.get_boundary_color(boundary_type, tier1)
 
-        # Show encouragement message
+        # Show encouragement message (red banner)
         encouragement = random.choice(self.messages)
         self.feedback_label.config(
             text=encouragement,
@@ -434,17 +514,30 @@ class WritingFeedbackApp:
             pady=8
         )
 
-        # Show boundary classification
+        # Show Tier 1 structural label
         self.boundary_label.config(
-            text=boundary_text,
-            bg=boundary_color,
+            text=tier1_text,
+            bg=tier1_color,
             pady=6
         )
 
+        # Show Tier 2 transitivity label (only for word boundaries)
+        if tier2_text:
+            self.tier2_label.config(
+                text=tier2_text,
+                bg="#2c3e50",
+                fg="#bdc3c7",
+                pady=4
+            )
+        else:
+            self.tier2_label.config(text="", bg="#2c3e50", pady=0)
+
         self.update_stats("Paused...")
         log_entry = f"Pause detected at {boundary_type}"
-        if pos_label:
-            log_entry += f" ({pos_label})"
+        if tier1:
+            log_entry += f" | Tier1: {tier1}"
+        if tier2:
+            log_entry += f" | Tier2: {tier2}"
         log_entry += f" (threshold: {self.pause_duration // 1000}s)"
         self.write_log(log_entry)
 
