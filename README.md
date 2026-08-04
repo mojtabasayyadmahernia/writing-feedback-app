@@ -51,6 +51,18 @@ keystroke → reset timer → [threshold elapsed] → parse text up to cursor
 
 Everything is logged to `history.log` with timestamps and boundary classifications which makes the app also usable as a data-collection tool for further pause research.
 
+**Session export.** Ending a session — the *End session & save* button, or closing the window — writes two files to `sessions/`: the final text, and a CSV of writing bursts with one row per pause.
+
+| Column | Meaning |
+|---|---|
+| `burst` | text produced since the previous pause |
+| `pause_ms` | length of the pause that followed it |
+| `burst_chars`, `burst_ms` | size and duration of the burst |
+| `pause_location` | boundary type the pause fell at |
+| `sfl_tier1`, `sfl_tier2` | the two SFL labels above |
+
+`pause_ms` is the interval between the last keystroke of a burst and the first keystroke of the next, so a pause still open when the session ends is left empty rather than truncated. `burst` is net text: backspaces within a burst pop from it, and a burst spent revising earlier text comes out empty.
+
 ## Running it
 
 ```bash
@@ -61,8 +73,8 @@ python main.py
 
 Requires Python 3.8+. Built with tkinter (bundled with Python), spaCy, and wordfreq.
 
-The pause threshold is adjustable in the app.
+The participant ID and pause threshold are set in the app. The 10s default suits live feedback; for collecting burst data a lower threshold (~2s) is more usual.
 
 ## Status
 
-Prototype (v0.4). Working and usable, but single-file, English-only, and untested against real writers. Natural next steps: a session summary view, export of the pause log for analysis, and validation of the boundary classifier against hand-annotated data.
+Prototype (v0.5). Working and usable, but English-only and untested against real writers. Natural next steps: a session summary view, and validation of the boundary classifier against hand-annotated data.

@@ -1,9 +1,13 @@
+import os
 import tkinter as tk
+from tkinter import messagebox
 import random
 import time
 from datetime import datetime
 import spacy
 import wordfreq
+
+from burst_logger import BurstRecorder
 
 class WritingFeedbackApp:
     def __init__(self):
@@ -19,6 +23,11 @@ class WritingFeedbackApp:
         # Configuration
         self.pause_duration = 10000
         self.log_file = "history.log"
+        self.session_dir = "sessions"
+
+        # Burst and pause recording (CSV + final text)
+        self.bursts = BurstRecorder(output_dir=self.session_dir, participant="P01")
+        self.session_ended = False
 
         # Track pause timing
         self.pause_start_time = None
@@ -74,7 +83,7 @@ class WritingFeedbackApp:
 
         tk.Label(
             header_frame,
-            text="Prototype v0.4",
+            text="Prototype v0.5",
             font=("Arial", 9),
             fg="#7f8c8d",
             bg="#1a252f"
@@ -91,6 +100,23 @@ class WritingFeedbackApp:
             fg="#ecf0f1",
             bg="#34495e"
         ).pack(side="left", padx=(20, 10))
+
+        tk.Label(
+            settings_frame,
+            text="Participant:",
+            font=("Arial", 10),
+            fg="#bdc3c7",
+            bg="#34495e"
+        ).pack(side="left")
+
+        self.participant_var = tk.StringVar(value="P01")
+        tk.Entry(
+            settings_frame,
+            textvariable=self.participant_var,
+            width=8,
+            font=("Arial", 10),
+            justify="center"
+        ).pack(side="left", padx=(5, 15))
 
         tk.Label(
             settings_frame,
@@ -138,6 +164,18 @@ class WritingFeedbackApp:
             bg="#34495e"
         )
         self.settings_status.pack(side="left", padx=5)
+
+        end_btn = tk.Button(
+            settings_frame,
+            text="End session & save",
+            font=("Arial", 9, "bold"),
+            bg="#c0392b",
+            fg="white",
+            relief="flat",
+            padx=10,
+            command=self.end_session
+        )
+        end_btn.pack(side="right", padx=(5, 20))
 
         # ===== FEEDBACK LABEL =====
         self.feedback_label = tk.Label(
@@ -239,6 +277,9 @@ class WritingFeedbackApp:
         self.timer_id = None
         self.text_area.bind("<Key>", self.on_key_press)
         self.text_area.focus_set()
+
+        # Closing the window ends the session and writes the log files
+        self.root.protocol("WM_DELETE_WINDOW", lambda: self.end_session(show_dialog=False))
 
         # Log session start
         self.write_log("--- Session started ---")
@@ -473,7 +514,37 @@ class WritingFeedbackApp:
         except ValueError:
             self.settings_status.config(text="Enter a number!", fg="#e74c3c")
 
+    # ── Burst recording ───────────────────────────────────────────────────
+    def end_session(self, show_dialog=True):
+        """Write the burst CSV and the final text, then close."""
+        if self.session_ended:
+            return
+        self.session_ended = True
+
+        if self.timer_id is not None:
+            self.root.after_cancel(self.timer_id)
+            self.timer_id = None
+
+        self.bursts.participant = self.participant_var.get().strip() or "P01"
+        final_text = self.text_area.get("1.0", "end-1c")
+        csv_path, txt_path = self.bursts.save(final_text)
+
+        self.write_log(f"--- Session ended | {csv_path} | {txt_path} ---")
+
+        if show_dialog:
+            messagebox.showinfo(
+                "Session saved",
+                f"Bursts and pauses:\n{os.path.abspath(csv_path)}\n\n"
+                f"Final text:\n{os.path.abspath(txt_path)}"
+            )
+
+        self.root.destroy()
+
     def on_key_press(self, event):
+        # Feed the burst recorder first. A keystroke arriving here also
+        # closes any pause that is currently open.
+        self.bursts.key_typed(event.keysym, event.char)
+
         if self.pause_start_time is not None:
             pause_length = time.time() - self.pause_start_time
             self.total_pause_time += pause_length
@@ -505,6 +576,10 @@ class WritingFeedbackApp:
         tier1_text  = self.get_boundary_display_text(boundary_type, tier1, tier2)
         tier2_text  = self.get_tier2_display_text(boundary_type, tier2)
         tier1_color = self.get_boundary_color(boundary_type, tier1)
+
+        # Close the burst that just ended. The pause itself is measured when
+        # writing resumes.
+        self.bursts.pause_detected(boundary_type, tier1, tier2)
 
         # Show encouragement message (red banner)
         encouragement = random.choice(self.messages)
