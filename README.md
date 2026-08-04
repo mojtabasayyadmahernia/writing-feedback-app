@@ -11,7 +11,7 @@ Sayyad Mahernia, M. (2026). Pause for thought: Systemic Functional units and the
 
 ## The idea
 
-In my PhD thesis I found that pauses in writing aren't random. Their duration and placement track important structural points, with the longest pauses falling at sentence boundaries.
+In my PhD project I found that pauses in writing aren't random. Their duration and placement track important structural points, with the longest pauses falling at sentence boundaries.
 
 This app tests whether that signal is usable in real-time. When you stop typing for longer than a set threshold, it parses the text up to your cursor and reports what kind of boundary you paused at and tries to give appropriate feedback.
 
