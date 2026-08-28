@@ -8,6 +8,7 @@ import spacy
 import wordfreq
 
 from burst_logger import BurstRecorder
+from process_type import clause_process_type
 
 class WritingFeedbackApp:
     def __init__(self):
@@ -83,7 +84,7 @@ class WritingFeedbackApp:
 
         tk.Label(
             header_frame,
-            text="Prototype v0.5",
+            text="Prototype v0.6",
             font=("Arial", 9),
             fg="#7f8c8d",
             bg="#1a252f"
@@ -577,9 +578,14 @@ class WritingFeedbackApp:
         tier2_text  = self.get_tier2_display_text(boundary_type, tier2)
         tier1_color = self.get_boundary_color(boundary_type, tier1)
 
+        # TRANSITIVITY process type of the clause currently being written
+        process = clause_process_type(self.nlp, text_before_cursor)
+        if process:
+            tier2_text = (tier2_text + "   \u00b7   " if tier2_text else "") + f"Process: {process}"
+
         # Close the burst that just ended. The pause itself is measured when
         # writing resumes.
-        self.bursts.pause_detected(boundary_type, tier1, tier2)
+        self.bursts.pause_detected(boundary_type, tier1, tier2, process)
 
         # Show encouragement message (red banner)
         encouragement = random.choice(self.messages)
@@ -613,6 +619,8 @@ class WritingFeedbackApp:
             log_entry += f" | Tier1: {tier1}"
         if tier2:
             log_entry += f" | Tier2: {tier2}"
+        if process:
+            log_entry += f" | Process: {process}"
         log_entry += f" (threshold: {self.pause_duration // 1000}s)"
         self.write_log(log_entry)
 
