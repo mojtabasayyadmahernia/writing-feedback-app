@@ -1,0 +1,5 @@
+pause_n,pause_ms,boundary_type,tier1,tier2,process,context_key,phase,burst_chars,outcome,detail,prompt_id,prompt_type,prompt_text
+1,1515,word_boundary,within_rheme,Process (auxiliary),Relational,within_rheme,REVISION,8,revision_phase,,,,
+2,1685,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,REVISION,0,revision_phase,,,,
+3,1529,word_boundary,within_rheme,Participant (Actor/Senser/Carrier),Relational,within_rheme,REVISION,11,revision_phase,,,,
+4,1523,word_boundary,within_rheme,Participant (Actor/Senser/Carrier),Relational,within_rheme,REVISION,1,revision_phase,,,,

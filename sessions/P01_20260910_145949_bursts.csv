@@ -1,0 +1,5 @@
+burst_id,burst,burst_chars,burst_ms,pause_ms,pause_location,sfl_tier1,sfl_tier2,process_type
+1,What is ,8,4877,3916,word_boundary,within_rheme,Process (auxiliary),Relational
+2,,0,790,8604,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),
+3, is the man,11,1512,9139,word_boundary,within_rheme,Participant (Actor/Senser/Carrier),Relational
+4, ,1,0,,word_boundary,within_rheme,Participant (Actor/Senser/Carrier),Relational

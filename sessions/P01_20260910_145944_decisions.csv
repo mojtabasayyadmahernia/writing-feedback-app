@@ -1,0 +1,13 @@
+pause_n,pause_ms,boundary_type,tier1,tier2,process,context_key,phase,burst_chars,outcome,detail,prompt_id,prompt_type,prompt_text
+1,1718,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,DRAFTING,4,DELIVERED,,P8,Orienting,"What does this do, or what is it like?"
+2,1509,word_boundary,within_rheme,Participant (Actor/Senser/Carrier),Relational,within_rheme,DRAFTING,8,low_potential,6.50 < 7.0,,,
+3,1508,word_boundary,within_rheme,Participant (Actor/Senser/Carrier),Relational,within_rheme,REVISION,15,revision_phase,,,,
+4,1502,sentence_boundary,,,,sentence,REVISION,28,revision_phase,,,,
+5,1502,sentence_boundary,,,,sentence,REVISION,1,revision_phase,,,,
+6,1614,phrase_boundary,,,Material,phrase,REVISION,16,revision_phase,,,,
+7,1986,word_boundary,pre_theme,Unknown (SCONJ),,pre_theme,REVISION,3,revision_phase,,,,
+8,1609,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,REVISION,5,revision_phase,,,,
+9,1611,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,REVISION,5,revision_phase,,,,
+10,1511,word_boundary,within_rheme,Process (auxiliary),Relational,within_rheme,REVISION,7,revision_phase,,,,
+11,1507,word_boundary,within_rheme,Process (auxiliary),Relational,within_rheme,REVISION,1,revision_phase,,,,
+12,1501,sentence_boundary,,,,sentence,REVISION,0,revision_phase,,,,

@@ -1,0 +1,13 @@
+burst_id,burst,burst_chars,burst_ms,pause_ms,pause_location,sfl_tier1,sfl_tier2,process_type
+1,What,4,563,4142,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),
+2, are we ,8,1230,11079,word_boundary,within_rheme,Participant (Actor/Senser/Carrier),Relational
+3,is the greatest,15,3923,7986,word_boundary,within_rheme,Participant (Actor/Senser/Carrier),Relational
+4,The great man was listening.,28,7892,1929,sentence_boundary,,,
+5, ,1,0,20242,sentence_boundary,,,
+6,he man broke the,16,4740,11320,phrase_boundary,,,Material
+7,how,3,4729,8614,word_boundary,pre_theme,Unknown (SCONJ),
+8,what ,5,1113,11977,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),
+9,What ,5,2055,5895,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),
+10,What is,7,3692,5734,word_boundary,within_rheme,Process (auxiliary),Relational
+11, ,1,0,3847,word_boundary,within_rheme,Process (auxiliary),Relational
+12,,0,889,,sentence_boundary,,,

@@ -1,0 +1,200 @@
+2026-09-10 14:57:22 - --- Session started ---
+2026-09-10 14:57:26 - Prompting disabled
+2026-09-10 14:57:27 - Prompting enabled
+2026-09-10 14:57:27 - Randomisation enabled
+2026-09-10 14:57:28 - Randomisation disabled
+2026-09-10 14:57:35 - Min pause set to 1.0s
+2026-09-10 14:57:39 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 14:57:40 - Decision: DELIVERED | ctx=theme_rheme | 1718ms 
+2026-09-10 14:57:42 - Writing resumed (paused for 3.1s)
+2026-09-10 14:57:45 - Uptake: False
+2026-09-10 14:57:45 - Pause at word_boundary | Tier1: within_rheme | Tier2: Participant (Actor/Senser/Carrier) | Process: Relational
+2026-09-10 14:57:45 - Decision: low_potential | ctx=within_rheme | 1509ms 6.50 < 7.0
+2026-09-10 14:57:55 - Writing resumed (paused for 10.1s)
+2026-09-10 14:58:00 - Pause at word_boundary | Tier1: within_rheme | Tier2: Participant (Actor/Senser/Carrier) | Process: Relational
+2026-09-10 14:58:00 - Decision: revision_phase | ctx=within_rheme | 1508ms 
+2026-09-10 14:58:07 - Writing resumed (paused for 7.0s)
+2026-09-10 14:58:15 - Pause at sentence_boundary
+2026-09-10 14:58:16 - Decision: revision_phase | ctx=sentence | 1502ms 
+2026-09-10 14:58:16 - Writing resumed (paused for 0.9s)
+2026-09-10 14:58:18 - Pause at sentence_boundary
+2026-09-10 14:58:18 - Decision: revision_phase | ctx=sentence | 1502ms 
+2026-09-10 14:58:37 - Writing resumed (paused for 19.1s)
+2026-09-10 14:58:42 - Pause at phrase_boundary | Process: Material
+2026-09-10 14:58:43 - Decision: revision_phase | ctx=phrase | 1614ms 
+2026-09-10 14:58:53 - Writing resumed (paused for 10.3s)
+2026-09-10 14:58:58 - Pause at word_boundary | Tier1: pre_theme | Tier2: Unknown (SCONJ)
+2026-09-10 14:58:59 - Decision: revision_phase | ctx=pre_theme | 1986ms 
+2026-09-10 14:59:06 - Writing resumed (paused for 7.6s)
+2026-09-10 14:59:08 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 14:59:09 - Decision: revision_phase | ctx=theme_rheme | 1609ms 
+2026-09-10 14:59:19 - Writing resumed (paused for 11.0s)
+2026-09-10 14:59:22 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 14:59:23 - Decision: revision_phase | ctx=theme_rheme | 1611ms 
+2026-09-10 14:59:27 - Writing resumed (paused for 4.9s)
+2026-09-10 14:59:32 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process (auxiliary) | Process: Relational
+2026-09-10 14:59:32 - Decision: revision_phase | ctx=within_rheme | 1511ms 
+2026-09-10 14:59:36 - Writing resumed (paused for 4.7s)
+2026-09-10 14:59:37 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process (auxiliary) | Process: Relational
+2026-09-10 14:59:38 - Decision: revision_phase | ctx=within_rheme | 1507ms 
+2026-09-10 14:59:40 - Writing resumed (paused for 2.8s)
+2026-09-10 14:59:42 - Pause at sentence_boundary
+2026-09-10 14:59:43 - Decision: revision_phase | ctx=sentence | 1501ms 
+2026-09-10 14:59:44 - --- Session ended | sessions\P01_20260910_145722_bursts.csv | sessions\P01_20260910_145722.txt | sessions\P01_20260910_145944_decisions.csv | prompts=1 ---
+2026-09-10 14:59:49 - --- Session started ---
+2026-09-10 14:59:51 - Min pause set to 1.0s
+2026-09-10 14:59:58 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process (auxiliary) | Process: Relational
+2026-09-10 14:59:59 - Decision: revision_phase | ctx=within_rheme | 1515ms 
+2026-09-10 15:00:01 - Writing resumed (paused for 2.9s)
+2026-09-10 15:00:03 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:00:04 - Decision: revision_phase | ctx=theme_rheme | 1685ms 
+2026-09-10 15:00:11 - Writing resumed (paused for 7.6s)
+2026-09-10 15:00:13 - Pause at word_boundary | Tier1: within_rheme | Tier2: Participant (Actor/Senser/Carrier) | Process: Relational
+2026-09-10 15:00:14 - Decision: revision_phase | ctx=within_rheme | 1529ms 
+2026-09-10 15:00:21 - Writing resumed (paused for 8.1s)
+2026-09-10 15:00:22 - Pause at word_boundary | Tier1: within_rheme | Tier2: Participant (Actor/Senser/Carrier) | Process: Relational
+2026-09-10 15:00:23 - Decision: revision_phase | ctx=within_rheme | 1523ms 
+2026-09-10 15:00:36 - --- Session ended | sessions\P01_20260910_145949_bursts.csv | sessions\P01_20260910_145949.txt | sessions\P01_20260910_150036_decisions.csv | prompts=0 ---
+2026-09-10 15:02:05 - --- Session started ---
+2026-09-10 15:02:06 - Min pause set to 1.0s
+2026-09-10 15:02:12 - Pause at word_boundary | Tier1: pre_theme | Tier2: Unknown (SCONJ)
+2026-09-10 15:02:13 - Decision: already_relating | ctx=pre_theme | 2060ms 
+2026-09-10 15:02:24 - Writing resumed (paused for 11.9s)
+2026-09-10 15:02:29 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Circumstance (preposition)
+2026-09-10 15:02:30 - Decision: revision_phase | ctx=theme_rheme | 1598ms 
+2026-09-10 15:02:37 - Writing resumed (paused for 8.2s)
+2026-09-10 15:02:44 - Pause at sentence_boundary
+2026-09-10 15:02:45 - Decision: revision_phase | ctx=sentence | 1501ms 
+2026-09-10 15:02:45 - Writing resumed (paused for 0.9s)
+2026-09-10 15:02:54 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process | Process: Material
+2026-09-10 15:02:55 - Decision: revision_phase | ctx=within_rheme | 1523ms 
+2026-09-10 15:02:55 - Writing resumed (paused for 1.0s)
+2026-09-10 15:02:57 - Pause at phrase_boundary | Process: Material
+2026-09-10 15:02:58 - Decision: revision_phase | ctx=phrase | 1605ms 
+2026-09-10 15:02:58 - Writing resumed (paused for 0.9s)
+2026-09-10 15:03:03 - Pause at sentence_boundary
+2026-09-10 15:03:03 - Decision: revision_phase | ctx=sentence | 1501ms 
+2026-09-10 15:03:06 - Writing resumed (paused for 3.5s)
+2026-09-10 15:03:11 - Pause at phrase_boundary
+2026-09-10 15:03:11 - Decision: revision_phase | ctx=phrase | 1604ms 
+2026-09-10 15:03:17 - Writing resumed (paused for 6.6s)
+2026-09-10 15:03:25 - Pause at phrase_boundary | Process: Mental
+2026-09-10 15:03:25 - Decision: revision_phase | ctx=phrase | 1599ms 
+2026-09-10 15:03:36 - Writing resumed (paused for 11.7s)
+2026-09-10 15:03:39 - Pause at word_boundary | Tier1: within_rheme | Tier2: Circumstance | Process: Relational
+2026-09-10 15:03:39 - Decision: revision_phase | ctx=within_rheme | 1529ms 
+2026-09-10 15:03:41 - Writing resumed (paused for 2.5s)
+2026-09-10 15:03:47 - Pause at mid_word | Process: Relational
+2026-09-10 15:03:47 - Decision: revision_phase | ctx=mid_word | 1326ms 
+2026-09-10 15:03:48 - Writing resumed (paused for 1.5s)
+2026-09-10 15:03:54 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process (auxiliary) | Process: Relational
+2026-09-10 15:03:54 - Decision: revision_phase | ctx=within_rheme | 1517ms 
+2026-09-10 15:04:01 - Prompting disabled
+2026-09-10 15:04:02 - Randomisation enabled
+2026-09-10 15:04:02 - Min pause set to 1.0s
+2026-09-10 15:04:03 - Prompting enabled
+2026-09-10 15:04:07 - Writing resumed (paused for 13.6s)
+2026-09-10 15:04:08 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process (auxiliary) | Process: Relational
+2026-09-10 15:04:09 - Decision: revision_phase | ctx=within_rheme | 1519ms 
+2026-09-10 15:04:09 - Writing resumed (paused for 1.0s)
+2026-09-10 15:04:12 - Pause at phrase_boundary | Process: Relational
+2026-09-10 15:04:13 - Decision: revision_phase | ctx=phrase | 1615ms 
+2026-09-10 15:04:32 - --- Session ended | sessions\P01_20260910_150205_bursts.csv | sessions\P01_20260910_150205.txt | sessions\P01_20260910_150432_decisions.csv | prompts=0 ---
+2026-09-10 15:09:28 - --- Session started ---
+2026-09-10 15:09:30 - Min pause set to 1.0s
+2026-09-10 15:09:35 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process (auxiliary) | Process: Relational
+2026-09-10 15:09:36 - Decision: low_potential | ctx=within_rheme | 1508ms 6.50 < 7.0
+2026-09-10 15:09:44 - Writing resumed (paused for 8.2s)
+2026-09-10 15:09:45 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:09:45 - Decision: DELIVERED | ctx=theme_rheme | 1671ms 
+2026-09-10 15:09:47 - Writing resumed (paused for 2.4s)
+2026-09-10 15:09:50 - Uptake: False
+2026-09-10 15:09:50 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:09:51 - Decision: refractory | ctx=theme_rheme | 1611ms 
+2026-09-10 15:09:54 - Writing resumed (paused for 3.7s)
+2026-09-10 15:09:55 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process (auxiliary) | Process: Relational
+2026-09-10 15:09:55 - Decision: low_potential | ctx=within_rheme | 1507ms 6.50 < 7.0
+2026-09-10 15:09:55 - Writing resumed (paused for 0.6s)
+2026-09-10 15:09:57 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:09:58 - Decision: refractory | ctx=theme_rheme | 1596ms 
+2026-09-10 15:10:04 - Writing resumed (paused for 6.7s)
+2026-09-10 15:10:08 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process (auxiliary) | Process: Relational
+2026-09-10 15:10:09 - Decision: low_potential | ctx=within_rheme | 1509ms 6.50 < 7.0
+2026-09-10 15:10:09 - Writing resumed (paused for 1.2s)
+2026-09-10 15:10:11 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:10:11 - Decision: DELIVERED | ctx=theme_rheme | 1604ms 
+2026-09-10 15:10:15 - Writing resumed (paused for 4.2s)
+2026-09-10 15:10:17 - Uptake: False
+2026-09-10 15:10:17 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:10:18 - Decision: refractory | ctx=theme_rheme | 1597ms 
+2026-09-10 15:10:20 - Writing resumed (paused for 3.1s)
+2026-09-10 15:10:24 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:10:25 - Decision: refractory | ctx=theme_rheme | 1597ms 
+2026-09-10 15:10:28 - Writing resumed (paused for 4.1s)
+2026-09-10 15:10:30 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process (auxiliary) | Process: Relational
+2026-09-10 15:10:30 - Decision: revision_phase | ctx=within_rheme | 1517ms 
+2026-09-10 15:10:34 - Writing resumed (paused for 3.8s)
+2026-09-10 15:10:35 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:10:36 - Decision: revision_phase | ctx=theme_rheme | 1597ms 
+2026-09-10 15:10:39 - Writing resumed (paused for 4.1s)
+2026-09-10 15:10:45 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:10:46 - Decision: revision_phase | ctx=theme_rheme | 1605ms 
+2026-09-10 15:10:49 - Writing resumed (paused for 3.9s)
+2026-09-10 15:10:54 - Pause at phrase_boundary | Process: Existential
+2026-09-10 15:10:55 - Decision: revision_phase | ctx=phrase | 1610ms 
+2026-09-10 15:11:00 - Writing resumed (paused for 5.1s)
+2026-09-10 15:11:02 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:11:03 - Decision: revision_phase | ctx=theme_rheme | 1605ms 
+2026-09-10 15:11:10 - --- Session ended | sessions\P01_20260910_150928_bursts.csv | sessions\P01_20260910_150928.txt | sessions\P01_20260910_151110_decisions.csv | prompts=2 ---
+2026-09-10 15:15:49 - --- Session started ---
+2026-09-10 15:15:53 - Min pause set to 1.0s
+2026-09-10 15:15:55 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:15:56 - theme_rheme | threshold 1500ms | prompt: What does this do, or what is it like?
+2026-09-10 15:15:58 - Writing resumed (paused for 2.6s)
+2026-09-10 15:16:00 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:16:01 - theme_rheme | threshold 1500ms | prompt: What does this do, or what is it like?
+2026-09-10 15:16:02 - Writing resumed (paused for 1.6s)
+2026-09-10 15:16:03 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process (auxiliary) | Process: Relational
+2026-09-10 15:16:03 - Writing resumed (paused for 0.4s)
+2026-09-10 15:16:05 - Pause at word_boundary | Tier1: within_rheme | Tier2: Participant (Actor/Senser/Carrier) | Process: Existential
+2026-09-10 15:16:05 - within_rheme | threshold 1500ms | prompt: What follows from this?
+2026-09-10 15:16:07 - Writing resumed (paused for 2.7s)
+2026-09-10 15:16:10 - Pause at word_boundary | Tier1: within_rheme | Tier2: Participant (Actor/Senser/Carrier) | Process: Existential
+2026-09-10 15:16:11 - within_rheme | threshold 1500ms | prompt: What follows from this?
+2026-09-10 15:16:13 - Writing resumed (paused for 3.2s)
+2026-09-10 15:16:19 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Circumstance (preposition)
+2026-09-10 15:16:20 - theme_rheme | threshold 1500ms | prompt: What does this do, or what is it like?
+2026-09-10 15:16:31 - Writing resumed (paused for 12.4s)
+2026-09-10 15:16:34 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process (auxiliary) | Process: Relational
+2026-09-10 15:16:35 - within_rheme | threshold 1500ms | prompt: On what grounds?
+2026-09-10 15:16:35 - Writing resumed (paused for 1.1s)
+2026-09-10 15:16:42 - Pause at word_boundary | Tier1: within_rheme | Tier2: Process | Process: Material
+2026-09-10 15:16:42 - within_rheme | threshold 1500ms | prompt: What does this affect, and what follows from it?
+2026-09-10 15:16:47 - Writing resumed (paused for 4.8s)
+2026-09-10 15:16:49 - Pause at phrase_boundary | Process: Material
+2026-09-10 15:16:50 - phrase | threshold 1500ms | prompt: What does this do, or what is it like?
+2026-09-10 15:17:02 - Writing resumed (paused for 12.4s)
+2026-09-10 15:17:03 - Pause at phrase_boundary | Process: Material
+2026-09-10 15:17:04 - phrase | threshold 1500ms | prompt: What does this do, or what is it like?
+2026-09-10 15:17:26 - Writing resumed (paused for 23.1s)
+2026-09-10 15:17:28 - Pause at phrase_boundary | Process: Material
+2026-09-10 15:17:28 - phrase | threshold 1500ms | prompt: What does this do, or what is it like?
+2026-09-10 15:17:31 - Writing resumed (paused for 3.3s)
+2026-09-10 15:17:34 - Pause at phrase_boundary | Process: Material
+2026-09-10 15:17:35 - phrase | threshold 1500ms | prompt: What does this do, or what is it like?
+2026-09-10 15:17:36 - Writing resumed (paused for 1.1s)
+2026-09-10 15:17:37 - Pause at word_boundary | Tier1: within_rheme | Tier2: Conjunction | Process: Material
+2026-09-10 15:17:38 - within_rheme | threshold 1500ms | prompt: What does this do, or what is it like?
+2026-09-10 15:17:39 - Writing resumed (paused for 2.0s)
+2026-09-10 15:17:46 - Pause at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written)
+2026-09-10 15:17:47 - theme_rheme | threshold 1500ms | prompt: What does this do, or what is it like?
+2026-09-10 15:17:55 - Writing resumed (paused for 8.7s)
+2026-09-10 15:17:57 - Pause at phrase_boundary | Process: Relational
+2026-09-10 15:17:57 - phrase | threshold 1500ms | prompt: On what grounds?
+2026-09-10 15:18:02 - Writing resumed (paused for 5.0s)
+2026-09-10 15:18:04 - Pause at phrase_boundary | Process: Relational
+2026-09-10 15:18:05 - phrase | threshold 1500ms | prompt: On what grounds?
+2026-09-10 15:18:08 - Writing resumed (paused for 3.8s)
+2026-09-10 15:18:10 - Pause at sentence_boundary
+2026-09-10 15:18:11 - sentence | threshold 1500ms | prompt: How does what comes next follow from this?
+2026-09-10 15:18:16 - --- Session ended | sessions\P01_20260910_151549_bursts.csv | sessions\P01_20260910_151549.txt | sessions\P01_20260910_151816_decisions.csv | prompts=16 ---

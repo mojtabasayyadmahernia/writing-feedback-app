@@ -1,0 +1,18 @@
+burst_id,burst,burst_chars,burst_ms,pause_ms,pause_location,sfl_tier1,sfl_tier2,process_type
+1,what ,5,463,3570,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),
+2,what ,5,1245,2621,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),
+3,is ,3,208,1401,word_boundary,within_rheme,Process (auxiliary),Relational
+4,it,2,134,3711,word_boundary,within_rheme,Participant (Actor/Senser/Carrier),Existential
+5, that we ,9,1712,4240,word_boundary,within_rheme,Participant (Actor/Senser/Carrier),Existential
+6,The growth of ,14,4764,13395,word_boundary,theme_rheme_boundary,Circumstance (preposition),
+7,we are,6,1832,2120,word_boundary,within_rheme,Process (auxiliary),Relational
+8,The boy was playing ,20,5436,5835,word_boundary,within_rheme,Process,Material
+9,with a ,7,1542,13396,phrase_boundary,,,Material
+10,toy ,4,610,24056,phrase_boundary,,,Material
+11,that ,5,304,4273,phrase_boundary,,,Material
+12,which ,6,2657,2131,phrase_boundary,,,Material
+13, if ,4,444,2981,word_boundary,within_rheme,Conjunction,Material
+14,The man ,8,6197,9704,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),
+15,is a ,5,713,5960,phrase_boundary,,,Relational
+16,very good ,10,1561,4808,phrase_boundary,,,Relational
+17,,0,1466,,sentence_boundary,,,

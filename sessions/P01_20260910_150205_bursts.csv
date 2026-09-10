@@ -1,0 +1,14 @@
+burst_id,burst,burst_chars,burst_ms,pause_ms,pause_location,sfl_tier1,sfl_tier2,process_type
+1,because ,8,3283,12891,word_boundary,pre_theme,Unknown (SCONJ),
+2,the goal of ,12,4342,9160,word_boundary,theme_rheme_boundary,Circumstance (preposition),
+3,is going to be very important. ,31,6239,1881,sentence_boundary,,,
+4,What was done ,14,7617,1968,word_boundary,within_rheme,Process,Material
+5,however ,8,1048,1880,phrase_boundary,,,Material
+6,", we are not in the mood. ",26,4021,4493,sentence_boundary,,,
+7,"So, ",4,3127,7600,phrase_boundary,,,
+8,"we need to change the dynamic, ",31,6420,12694,phrase_boundary,,,Mental
+9,the goal is too,15,1721,3498,word_boundary,within_rheme,Circumstance,Relational
+10, unreachable ,13,4369,2489,mid_word,,,Relational
+11,that we must,12,4470,14647,word_boundary,within_rheme,Process (auxiliary),Relational
+12, ,1,0,2014,word_boundary,within_rheme,Process (auxiliary),Relational
+13,go over ,8,1854,,phrase_boundary,,,Relational

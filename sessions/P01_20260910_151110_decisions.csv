@@ -1,0 +1,15 @@
+pause_n,pause_ms,boundary_type,tier1,tier2,process,context_key,phase,burst_chars,outcome,detail,prompt_id,prompt_type,prompt_text
+1,1508,word_boundary,within_rheme,Process (auxiliary),Relational,within_rheme,DRAFTING,7,low_potential,6.50 < 7.0,,,
+2,1671,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,DRAFTING,0,DELIVERED,,P8,Orienting,"What does this do, or what is it like?"
+3,1611,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,DRAFTING,5,refractory,,,,
+4,1507,word_boundary,within_rheme,Process (auxiliary),Relational,within_rheme,DRAFTING,3,low_potential,6.50 < 7.0,,,
+5,1596,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,DRAFTING,0,refractory,,,,
+6,1509,word_boundary,within_rheme,Process (auxiliary),Relational,within_rheme,DRAFTING,8,low_potential,6.50 < 7.0,,,
+7,1604,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,DRAFTING,0,DELIVERED,,P8,Orienting,"What does this do, or what is it like?"
+8,1597,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,DRAFTING,5,refractory,,,,
+9,1597,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,DRAFTING,5,refractory,,,,
+10,1517,word_boundary,within_rheme,Process (auxiliary),Relational,within_rheme,REVISION,3,revision_phase,,,,
+11,1597,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,REVISION,0,revision_phase,,,,
+12,1605,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,REVISION,4,revision_phase,,,,
+13,1610,phrase_boundary,,,Existential,phrase,REVISION,16,revision_phase,,,,
+14,1605,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,REVISION,0,revision_phase,,,,

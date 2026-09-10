@@ -1,0 +1,17 @@
+pause_n,boundary_type,tier1,tier2,process,context,threshold_ms,prompt
+1,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,1500,"What does this do, or what is it like?"
+2,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,1500,"What does this do, or what is it like?"
+4,word_boundary,within_rheme,Participant (Actor/Senser/Carrier),Existential,within_rheme,1500,What follows from this?
+5,word_boundary,within_rheme,Participant (Actor/Senser/Carrier),Existential,within_rheme,1500,What follows from this?
+6,word_boundary,theme_rheme_boundary,Circumstance (preposition),,theme_rheme,1500,"What does this do, or what is it like?"
+7,word_boundary,within_rheme,Process (auxiliary),Relational,within_rheme,1500,On what grounds?
+8,word_boundary,within_rheme,Process,Material,within_rheme,1500,"What does this affect, and what follows from it?"
+9,phrase_boundary,,,Material,phrase,1500,"What does this do, or what is it like?"
+10,phrase_boundary,,,Material,phrase,1500,"What does this do, or what is it like?"
+11,phrase_boundary,,,Material,phrase,1500,"What does this do, or what is it like?"
+12,phrase_boundary,,,Material,phrase,1500,"What does this do, or what is it like?"
+13,word_boundary,within_rheme,Conjunction,Material,within_rheme,1500,"What does this do, or what is it like?"
+14,word_boundary,theme_rheme_boundary,Participant (Actor/Senser/Carrier — Process not yet written),,theme_rheme,1500,"What does this do, or what is it like?"
+15,phrase_boundary,,,Relational,phrase,1500,On what grounds?
+16,phrase_boundary,,,Relational,phrase,1500,On what grounds?
+17,sentence_boundary,,,,sentence,1500,How does what comes next follow from this?
