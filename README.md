@@ -5,7 +5,7 @@ A desktop prototype that watches for pauses while you type, then identifies paus
 *Built on findings from my PhD at Lund University. 
 Sayyad Mahernia, M. (2026). Pause for thought: Systemic Functional units and the dynamics of writing [Doctoral dissertation, Lund University]. Lund University Publications. https://lup.lub.lu.se/search/publication/f454544b-a7ed-4770-8e82-4c4abc110de1
 
-The prototype will be updated and modified for the "Worth the Pause" project.  
+The prototype will be updated and modified for the "Worth the Pause" project. The following is merely a demo for pause context identification in real-time; different interface with different activation method for different real-time feedbacks will be used for the project. 
 
 ![Detecting a pause and surfacing the boundary type](docs/demo.gif)
 
