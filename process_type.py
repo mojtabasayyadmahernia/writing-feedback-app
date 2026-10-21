@@ -8,35 +8,36 @@ Departures from Fontaine (2012), following the project's coding decisions:
 
   * Behavioural processes are not a separate type. Where they are assigned
     is configurable, because the choice is contested and must match whatever
-    the rest of a dataset was coded with — see BEHAVIOURAL_AS below.
+    the rest of a dataset was coded with -- see BEHAVIOURAL_AS below.
   * Identifying and Attributive are combined under Relational.
 
+Verb-list based. A lexicon cannot see context, so a verb that crosses types
+('see' as perception vs 'see' as understanding, 'have a shower' vs 'have a
+car') is assigned its most frequent reading. Expect roughly the accuracy of
+a first-pass automatic coding, not of a human annotator.
 """
 
 import re
 from typing import Optional
 
-# ── Process types ────────────────────────────────────────────────────────
 MATERIAL = "Material"
 MENTAL = "Mental"
 RELATIONAL = "Relational"
 VERBAL = "Verbal"
 EXISTENTIAL = "Existential"
+BEHAVIOURAL = "Behavioural"
 
 PROCESS_TYPES = (MATERIAL, MENTAL, RELATIONAL, VERBAL, EXISTENTIAL)
 
 # Where behavioural processes ('laugh', 'cry', 'stare') are assigned.
 #
-# Set to MENTAL to follow the current specification.
-# Set to MATERIAL to match the manuscript's published coding scheme, which
-# treats them as material on the grounds that the Behaver resembles an Actor
-# and cannot project a clause.
+# MENTAL follows the current specification.
+# MATERIAL matches the manuscript's published coding scheme.
+# BEHAVIOURAL keeps them as a sixth category, as the system network does.
 #
-# Sessions coded under different settings are not comparable, so this is
-# recorded in the API's /health response.
+# Sessions coded under different settings are not comparable.
 BEHAVIOURAL_AS = MENTAL
 
-# ── Verb lexicons, keyed on lemma ────────────────────────────────────────
 VERBAL_VERBS = {
     "say", "tell", "ask", "reply", "answer", "state", "claim", "argue",
     "suggest", "mention", "report", "announce", "declare", "explain",
@@ -48,21 +49,16 @@ VERBAL_VERBS = {
 }
 
 MENTAL_VERBS = {
-    # cognition
     "think", "know", "believe", "understand", "realise", "realize",
     "remember", "forget", "imagine", "consider", "doubt", "suppose",
     "wonder", "recognise", "recognize", "expect", "assume", "reckon",
     "conclude", "decide", "learn", "reflect", "ponder",
-    # perception
     "see", "hear", "feel", "notice", "perceive", "watch", "sense", "smell",
-    # affection and desire
     "like", "love", "hate", "want", "wish", "hope", "need", "prefer",
     "enjoy", "fear", "regret", "mind", "dislike", "appreciate", "value",
     "desire", "crave", "miss", "trust", "worry", "care",
 }
 
-# Behavioural: outward physiological or expressive behaviour. Assigned to
-# BEHAVIOURAL_AS rather than being a type of its own.
 BEHAVIOURAL_VERBS = {
     "laugh", "cry", "smile", "sigh", "breathe", "cough", "sneeze", "yawn",
     "frown", "stare", "gaze", "listen", "sleep", "dream", "weep", "chuckle",
@@ -78,8 +74,6 @@ RELATIONAL_VERBS = {
     "amount", "count",
 }
 
-# Copular when they take an Attribute ('the soup tastes good'), and
-# perception or behaviour otherwise ('he tasted the soup').
 COPULAR_WHEN_ATTRIBUTIVE = {
     "look", "feel", "sound", "taste", "smell", "appear", "seem", "grow",
     "turn", "prove", "come", "go", "get", "keep",
@@ -87,14 +81,8 @@ COPULAR_WHEN_ATTRIBUTIVE = {
 
 ATTRIBUTE_DEPS = {"acomp", "attr", "oprd"}
 
-# ── Detection ────────────────────────────────────────────────────────────
-def _process_token(doc):
-    """
-    The token carrying the Process, or None if the clause has no verb yet.
 
-    Prefers the lexical verb over its auxiliaries, so 'has been eating'
-    resolves to 'eat' rather than 'have'.
-    """
+def _process_token(doc):
     root = None
     for token in doc:
         if token.dep_ == "ROOT":
@@ -102,17 +90,11 @@ def _process_token(doc):
             break
     if root is None:
         return None
-
     if root.pos_ in ("VERB", "AUX"):
         return root
-
-    # ROOT is nominal: a copula may still be attached ('the idea is good'
-    # parses with 'good' as ROOT in some analyses).
     for child in root.children:
         if child.dep_ in ("cop", "aux") and child.pos_ in ("VERB", "AUX"):
             return child
-
-    # Fall back to any finite verb in the clause.
     for token in doc:
         if token.pos_ in ("VERB", "AUX"):
             return token
@@ -120,15 +102,6 @@ def _process_token(doc):
 
 
 def _is_existential(doc, verb) -> bool:
-    """
-    True for existential clauses.
-
-    Two patterns are accepted:
-      'there' + be   — the standard SFL existential
-      'it' + be      — included per the project's coding scheme, though
-                       most SFL treatments analyse this as Relational with
-                       'it' as Carrier or Token. See the module note.
-    """
     if verb.lemma_ != "be":
         return False
     for token in doc:
@@ -140,34 +113,21 @@ def _is_existential(doc, verb) -> bool:
 
 
 def _has_attribute(verb) -> bool:
-    """True if the verb takes an Attribute, making a copular reading right."""
     return any(child.dep_ in ATTRIBUTE_DEPS for child in verb.children)
 
 
-def _has_object(verb) -> bool:
-    return any(child.dep_ in ("dobj", "dative", "iobj") for child in verb.children)
-
-
 def _lemma_candidates(token):
-    """
-    Lemmas to try, in order.
-
-    spaCy's small model mislemmatises some regular past forms ('stared'
-    becomes 'star'), which silently drops the verb out of every lexicon and
-    defaults it to Material. Regular-inflection guesses are tried after the
-    lemma so a mislemmatised verb still lands in the right set.
-    """
     candidates = [token.lemma_.lower()]
     surface = token.text.lower()
     candidates.append(surface)
     if surface.endswith("ed"):
-        candidates.append(surface[:-1])   # stared -> stare
-        candidates.append(surface[:-2])   # walked -> walk
+        candidates.append(surface[:-1])
+        candidates.append(surface[:-2])
     if surface.endswith("ing"):
-        candidates.append(surface[:-3] + "e")  # staring -> stare
-        candidates.append(surface[:-3])        # walking -> walk
+        candidates.append(surface[:-3] + "e")
+        candidates.append(surface[:-3])
     if surface.endswith("s") and not surface.endswith("ss"):
-        candidates.append(surface[:-1])   # stares -> stare
+        candidates.append(surface[:-1])
     return candidates
 
 
@@ -176,51 +136,26 @@ def _in_lexicon(token, lexicon) -> bool:
 
 
 def get_process_type(doc) -> Optional[str]:
-    """
-    Return the TRANSITIVITY process type of the clause, or None if no
-    Process has been written yet.
-
-    `doc` is a parsed spaCy Doc for the current clause.
-    """
     verb = _process_token(doc)
     if verb is None:
         return None
-
     lemma = verb.lemma_.lower()
-
-    # Existential is checked first: 'there is' would otherwise be Relational.
     if _is_existential(doc, verb):
         return EXISTENTIAL
-
     if _in_lexicon(verb, VERBAL_VERBS):
         return VERBAL
-
-    # Copular-or-not verbs resolve on whether an Attribute is present.
     if lemma in COPULAR_WHEN_ATTRIBUTIVE and _has_attribute(verb):
         return RELATIONAL
-
     if lemma == "have":
-        # Possessive 'have' is Relational; 'have a shower' is Material, but
-        # the two are not distinguishable without a lexicon of light-verb
-        # objects, so the more frequent possessive reading is taken.
         return RELATIONAL
-
     if _in_lexicon(verb, BEHAVIOURAL_VERBS):
         return BEHAVIOURAL_AS
-
     if _in_lexicon(verb, MENTAL_VERBS):
         return MENTAL
-
     if _in_lexicon(verb, RELATIONAL_VERBS):
         return RELATIONAL
-
     return MATERIAL
 
-
-# ── Clause clipping and entry point ──────────────────────────────────────
-# The Process belongs to the clause being written, not to the whole essay.
-# Passing the full text would make spaCy's first ROOT come from an earlier
-# sentence, so the text is cut back to the clause in progress first.
 
 ABBREVIATIONS = {
     "dr", "mr", "mrs", "ms", "prof", "st", "jr", "sr",
@@ -237,18 +172,12 @@ def _is_abbreviation(text: str, index: int) -> bool:
     if not preceding:
         return False
     word = preceding.group(1).lower()
-    if len(word) == 1:        # an initial: 'J. R. R. Tolkien'
+    if len(word) == 1:
         return True
     return word in ABBREVIATIONS
 
 
 def current_clause(text: str) -> str:
-    """
-    Return the text after the last sentence-final punctuation mark.
-
-    'The cat sat. There is a' -> ' There is a'
-    'Dr. Smith arrived'       -> 'Dr. Smith arrived'
-    """
     for match in reversed(list(_SENTENCE_END.finditer(text))):
         if not _is_abbreviation(text, match.start()):
             return text[match.end():]
@@ -256,12 +185,6 @@ def current_clause(text: str) -> str:
 
 
 def clause_process_type(nlp, text: str) -> Optional[str]:
-    """
-    Process type of the clause in progress, or None if no Process has been
-    written yet.
-
-    `nlp` is a loaded spaCy model; `text` is everything up to the cursor.
-    """
     clause = current_clause(text).strip()
     if not clause:
         return None

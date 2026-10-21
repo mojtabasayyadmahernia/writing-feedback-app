@@ -198,3 +198,13 @@
 2026-09-10 15:18:10 - Pause at sentence_boundary
 2026-09-10 15:18:11 - sentence | threshold 1500ms | prompt: How does what comes next follow from this?
 2026-09-10 15:18:16 - --- Session ended | sessions\P01_20260910_151549_bursts.csv | sessions\P01_20260910_151549.txt | sessions\P01_20260910_151816_decisions.csv | prompts=16 ---
+2026-10-21 13:04:50 - --- Session started ---
+2026-10-21 13:04:54 - Threshold changed to 1.0s
+2026-10-21 13:04:58 - Pause detected at word_boundary | Tier1: within_rheme | Tier2: Process (auxiliary) | Process: Relational (threshold: 1s)
+2026-10-21 13:05:00 - Writing resumed (paused for 2.3s)
+2026-10-21 13:05:03 - Pause detected at mid_word | Process: Relational | Role: Carrier (threshold: 1s)
+2026-10-21 13:05:04 - Writing resumed (paused for 1.5s)
+2026-10-21 13:05:06 - Pause detected at word_boundary | Tier1: within_rheme | Tier2: Participant (Carrier) | Process: Relational | Role: Carrier (threshold: 1s)
+2026-10-21 13:05:08 - Writing resumed (paused for 2.8s)
+2026-10-21 13:05:14 - Pause detected at word_boundary | Tier1: theme_rheme_boundary | Tier2: Participant (Actor/Senser/Carrier — Process not yet written) (threshold: 1s)
+2026-10-21 13:05:18 - --- Session ended | sessions\P01_20261021_130450_bursts.csv | sessions\P01_20261021_130450.txt ---

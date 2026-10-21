@@ -1,1 +1,16 @@
-venv/\n__pycache__/\n*.pyc\n
+# Participant data — never commit this
+sessions/
+history.log
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

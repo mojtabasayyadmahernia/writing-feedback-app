@@ -5,7 +5,7 @@ A burst is the run of text produced between two pauses. Each row of the CSV
 is one pause together with the burst that preceded it:
 
     burst_id,burst,burst_chars,burst_ms,pause_ms,pause_location,
-    sfl_tier1,sfl_tier2,process_type
+    sfl_tier1,sfl_tier2,process_type,participant_role
 
 A pause is only given a duration when writing actually resumes, so pause_ms
 is the true interval between the last keystroke of the burst and the first
@@ -31,6 +31,7 @@ FIELDNAMES = [
     "sfl_tier1",
     "sfl_tier2",
     "process_type",
+    "participant_role",
 ]
 
 
@@ -80,7 +81,8 @@ class BurstRecorder:
             self._buffer.append(char)
         # Delete, arrows, Home/End and modifiers are ignored.
 
-    def pause_detected(self, location, tier1=None, tier2=None, process=None):
+    def pause_detected(self, location, tier1=None, tier2=None,
+                       process=None, role=None):
         """Call when the pause threshold fires."""
         if self._last_key_time is None:
             return  # a pause before any typing has no burst
@@ -95,6 +97,7 @@ class BurstRecorder:
             "sfl_tier1": tier1 or "",
             "sfl_tier2": tier2 or "",
             "process_type": process or "",
+            "participant_role": role or "",
             "_last_key_time": self._last_key_time,
         }
 
@@ -118,6 +121,7 @@ class BurstRecorder:
                 "sfl_tier1": "",
                 "sfl_tier2": "",
                 "process_type": "",
+                "participant_role": "",
             })
         self._buffer = []
 
