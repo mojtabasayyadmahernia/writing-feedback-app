@@ -36,7 +36,7 @@ When a pause is detected, three things appear:
 
 Each is colour-coded so the position is readable at a glance.
 
-**Tier 2 — transitivity role.** What the last completed element was: Participant (Actor, Goal, Phenomenon, Attribute…), Process, Circumstance, Epithet, Deictic, and so on — mapped from spaCy dependency labels to SFL categories.
+**Tier 2 — transitivity role.** What the last completed element was: Participant, Process, Circumstance, Epithet, Deictic, and so on — mapped from spaCy dependency labels to SFL categories, with participant roles resolved by process type (see below).
 
 ## Process type
 
@@ -56,11 +56,32 @@ Classification is lexicon-based, so verbs that cross types (*have a car* vs *hav
 
 Process type is computed independently of the boundary classification, so it is still recorded at pauses where Tier 1 and Tier 2 are blank — for example at a phrase boundary. This mirrors the coding scheme, where *Process Expressed* is a separate column from *Functional Context*.
 
+## Participant role
+
+A dependency label on its own cannot say which participant role it realises: an `nsubj` is an Actor in a material clause, a Senser in a mental one, a Sayer in a verbal one. Earlier versions therefore reported an unresolved disjunction, *Participant (Actor/Senser/Carrier)*.
+
+Process type supplies the missing half, so the role is now resolved:
+
+| Clause | Process | Role |
+|---|---|---|
+| *She climbed the mountain* | Material | Goal |
+| *I saw the change* | Mental | Phenomenon |
+| *The report mentioned the delay* | Verbal | Verbiage |
+| *There is a problem* | Existential | Existent |
+| *Online dating is convenient* | Relational | Attribute |
+
+The mapping comes from the realization statements in `networks/transitivity.json` of the companion [system-network-builder](https://github.com/mojtabasayyadmahernia/system-network-builder) project, which encodes Halliday & Matthiessen (2014), IFG4 ch. 5 — `material ["+Process", "+Actor"]`, `mental ["+Process", "+Senser"]`, and so on. The table is vendored into `process_participant.py` rather than imported, since the grammar engine deliberately has no dependency on spaCy; `verify_against_network()` re-derives it from a copy of the network file so the two can be checked against each other.
+
+Second participants (Goal, Phenomenon, Verbiage, Behaviour) are not in the network file, which stops at the delicacy where only the first participant is declared. Those are added by hand from IFG4 and marked as such in the module.
+
+Like process type, the role is computed independently of boundary type. This matters: a clause ending in an object is classified as a phrase boundary, so those clauses never reach the Tier 2 branch — and they are exactly the ones where the Goal/Phenomenon distinction is at stake.
+
 ## How it works
 
 ```
 keystroke → reset timer → [threshold elapsed] → parse text up to cursor
-  → classify boundary → two-tier SFL analysis → process type → display
+  → process type → participant role → classify boundary
+  → two-tier SFL analysis → display
 ```
 
 **Boundary detection** works from spaCy dependency parsing for phrase boundaries (`pobj`, `dobj`, `attr`, noun-chunk endings).
@@ -83,8 +104,20 @@ Everything is logged to `history.log` with timestamps and boundary classificatio
 | `pause_location` | boundary type the pause fell at |
 | `sfl_tier1`, `sfl_tier2` | the two SFL labels above |
 | `process_type` | process type of the clause being written |
+| `participant_role` | resolved participant role of the last element |
 
 `pause_ms` is the interval between the last keystroke of a burst and the first keystroke of the next, so a pause still open when the session ends is left empty rather than truncated. `burst` is net text: backspaces within a burst pop from it, and a burst spent revising earlier text comes out empty.
+
+`sessions/` and `history.log` are gitignored. They contain participants' own text and keystroke timing, so they should not be committed.
+
+## Files
+
+| File | Contents |
+|---|---|
+| `main.py` | Interface, pause timer, boundary detection, two-tier analysis |
+| `process_type.py` | TRANSITIVITY process typing; clause clipping |
+| `process_participant.py` | Participant role resolution from process type |
+| `burst_logger.py` | Burst accumulation and CSV export |
 
 ## Running it
 
@@ -100,4 +133,8 @@ The participant ID and pause threshold are set in the app. The 10s default suits
 
 ## Status
 
-Prototype (v0.6). Working and usable, but English-only and untested against real writers. Natural next steps: a session summary view, and validation of the boundary classifier and process typing against hand-annotated data.
+Prototype (v0.7). Working and usable, but English-only and untested against real writers.
+
+Known issue: Tier 1 passes the whole text before the cursor to spaCy, so the Finite test is satisfied by any earlier clause and the label collapses to Within-Rheme after the first verb of a session. `current_clause()` in `process_type.py` is the fix. Until it is applied, `sfl_tier1` is not usable beyond the opening clause.
+
+Natural next steps: that fix, a session summary view, and validation of the boundary classifier, process typing and role resolution against hand-annotated data.
