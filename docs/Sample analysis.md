@@ -2,7 +2,7 @@
 
 A worked example of the idea-discovery annotation guidelines, using an invented task, outline and paragraph on the topic of "working from home".
 
-**Note.** The task prompt is included because the guidelines count the task as content the writer already had. Burst boundaries are invented, since real keystroke data is needed to decide discovery.
+**Note.** The task prompt is included because the guidelines count the task as content the writer already had. Burst boundaries are invented, since real keystroke data is needed to decide discovery.This is merely a sample analysis using made-up bursts, outline, and text, as ethical approval for using real-time data from real participants is yet to be obtained.
 
 ## Contents
 
