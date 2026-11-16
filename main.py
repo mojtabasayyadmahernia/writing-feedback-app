@@ -8,7 +8,7 @@ import spacy
 import wordfreq
 
 from burst_logger import BurstRecorder
-from process_type import clause_process_type
+from projection import sentence_process_type, role_process_type
 from process_participant import clause_participant_role
 from clause_boundary import ends_complete_clause, unmarked_ending, SENTENCE, GROUP
 from group_progress import nominal_group_in_progress, CIRCUMSTANCE
@@ -87,7 +87,7 @@ class WritingFeedbackApp:
 
         tk.Label(
             header_frame,
-            text="Prototype v0.11",
+            text="Prototype v0.12",
             font=("Arial", 9),
             fg="#7f8c8d",
             bg="#1a252f"
@@ -653,21 +653,28 @@ class WritingFeedbackApp:
         cursor_pos = self.text_area.index("insert")
         text_before_cursor = self.text_area.get("1.0", cursor_pos)
 
-        # TRANSITIVITY: process type of the clause in progress, and the
-        # participant role it resolves for the last element written.
+        # TRANSITIVITY. Two process types, because they answer different
+        # questions (see projection.py):
+        #   process      - the type of the sentence being written, as the
+        #                  hand coding assigns it ('I think he broke the
+        #                  window' -> Mental, from the projecting 'think');
+        #   role_process - the type of the verb the last word depends on,
+        #                  which is what assigns its participant role
+        #                  ('the window' is Goal of 'broke' -> Material).
         # Both are computed before the boundary analysis so Tier 2 can use
         # them, and both are recorded even where Tier 2 comes out blank.
-        process = clause_process_type(self.nlp, text_before_cursor)
+        process = sentence_process_type(self.nlp, text_before_cursor)
+        role_process = role_process_type(self.nlp, text_before_cursor)
 
         # A nominal group still waiting for its head noun ('I broke the')
         # takes the role of the slot it is in, marked 'mid'. Otherwise the
         # role is read off the last element written, marked 'end'.
-        group = nominal_group_in_progress(self.nlp, text_before_cursor, process)
+        group = nominal_group_in_progress(self.nlp, text_before_cursor, role_process)
         if group is not None:
             role = group.role
             role_position = 'mid' if role else ''
         else:
-            role = clause_participant_role(self.nlp, text_before_cursor, process)
+            role = clause_participant_role(self.nlp, text_before_cursor, role_process)
             role_position = 'end' if role else ''
 
         # Analyze linguistic context

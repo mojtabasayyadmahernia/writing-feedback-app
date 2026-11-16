@@ -1,157 +1,153 @@
-# Writing Feedback App
+Writing Feedback App
 
 A desktop prototype that watches for pauses while you type, then identifies pause location using Systemic Functional Linguistics (SFL) based categories and gives feedback in real-time accordingly.
 
-*Built on findings from my PhD at Lund University. 
-Sayyad Mahernia, M. (2026). Pause for thought: Systemic Functional units and the dynamics of writing [Doctoral dissertation, Lund University]. Lund University Publications. https://lup.lub.lu.se/search/publication/f454544b-a7ed-4770-8e82-4c4abc110de1
+*Built on findings from my PhD at Lund University. Sayyad Mahernia, M. (2026). Pause for thought: Systemic Functional units and the dynamics of writing [Doctoral dissertation, Lund University]. Lund University Publications. https://lup.lub.lu.se/search/publication/f454544b-a7ed-4770-8e82-4c4abc110de1
 
-The prototype will be updated and modified for the "Worth the Pause" project. The following is merely a demo for pause context identification in real-time; different interface with different activation method for different real-time feedbacks will be used for the project. 
+The prototype will be updated and modified for the "Worth the Pause" project. The following is merely a demo for pause context identification in real-time; different interface with different activation method for different real-time feedbacks will be used for the project.
 
-![Detecting a pause and surfacing the boundary type](docs/demo.gif)
+Detecting a pause and surfacing the boundary type
 
----
-
-## The idea
+The idea
 
 In my PhD project I found that pauses in writing aren't random. Their duration and placement track important structural points, with the longest pauses falling at sentence boundaries.
 
 This app tests whether that signal is usable in real-time. When you stop typing for longer than a set threshold, it parses the text up to your cursor and reports what kind of boundary you paused at and tries to give appropriate feedback.
 
-## What it shows
+What it shows
 
 When a pause is detected, three things appear:
 
-**An encouragement prompt** — a rotating nudge to keep going.
+An encouragement prompt — a rotating nudge to keep going.
 
-**Tier 1 — structural position.** Where the pause falls relative to clause structure:
+Tier 1 — structural position. Where the pause falls relative to clause structure:
 
-| Label | Meaning |
-|---|---|
-| Sentence boundary | Sentence closed by `.` `!` `?` |
-| Clause boundary | Clause grammatically complete, without a full stop |
-| Phrase boundary | End of a noun phrase, object, or adverbial |
-| Mid-group | Inside a nominal group whose head noun is not written yet |
-| Pre-Theme | Clause not yet begun — no Subject or Finite written |
-| Theme–Rheme boundary | Subject written, Process not yet |
-| Within-Rheme | Clause in progress |
-| Mid-word | Stopped partway through a word |
+Label	Meaning
+Sentence boundary	Sentence closed by . ! ?, or complete with no full stop yet
+Clause boundary	Complete clause before , ; :
+Phrase boundary	End of a noun phrase, object, or adverbial
+Mid-group	Inside a nominal group whose head noun is not written yet
+Pre-Theme	Clause not yet begun — no Subject or Finite written
+Theme–Rheme boundary	Subject written, Process not yet
+Within-Rheme	Clause in progress
+Mid-word	Stopped partway through a word
 
 Each is colour-coded so the position is readable at a glance.
 
-**Tier 2 — transitivity role.** What the last completed element was: Participant, Process, Circumstance, Epithet, Deictic, and so on — mapped from spaCy dependency labels to SFL categories, with participant roles resolved by process type (see below).
+Tier 2 — transitivity role. What the last completed element was: Participant, Process, Circumstance, Epithet, Deictic, and so on — mapped from spaCy dependency labels to SFL categories, with participant roles resolved by process type (see below).
 
-## Process type
+Process type
 
-Alongside the two tiers, every pause is also assigned the TRANSITIVITY process type of the clause being written — the *Process Expressed* dimension, kept separate from the functional role of the last element. It appears on the Tier 2 line and is written to its own CSV column:
+Alongside the two tiers, every pause is also assigned the TRANSITIVITY process type of the clause being written — the Process Expressed dimension, kept separate from the functional role of the last element. It appears on the Tier 2 line and is written to its own CSV column:
 
-| Type | Example |
-|---|---|
-| Material | *She climbed the mountain* |
-| Mental | *I believe that*, *He laughed* |
-| Relational | *He became a doctor*, *The soup tastes good* |
-| Verbal | *The report says* |
-| Existential | *There is a problem* |
+Type	Example
+Material	She climbed the mountain
+Mental	I believe that, He laughed
+Relational	He became a doctor, The soup tastes good
+Verbal	The report says
+Existential	There is a problem
 
-Identifying and Attributive are combined under Relational. Behavioural processes are not a separate type; where they go is set by the `BEHAVIOURAL_AS` constant in `process_type.py`, currently Mental. Sessions coded under different settings are not comparable, so change it before collecting rather than after.
+Identifying and Attributive are combined under Relational. Behavioural processes are not a separate type; where they go is set by the BEHAVIOURAL_AS constant in process_type.py, currently Mental. Sessions coded under different settings are not comparable, so change it before collecting rather than after.
 
-Classification is lexicon-based, so verbs that cross types (*have a car* vs *have a shower*) get their most frequent reading. Treat the output as first-pass automatic coding and check agreement against hand-coded data before relying on it.
+Which verb counts (projection.py). The process type is that of the clause being written, with three refinements that follow the hand coding:
 
-Process type is computed independently of the boundary classification, so it is still recorded at pauses where Tier 1 and Tier 2 are blank — for example at a phrase boundary. This mirrors the coding scheme, where *Process Expressed* is a separate column from *Functional Context*.
+Projection. A clause projected by a mental or verbal process takes the projecting type: I think he broke the window is Mental.
+Clause complexes. A coordinated clause has its own process (…, yet some people still prefer to → Mental). A dependent clause (… because it saves time) takes the process of the clause it depends on.
+Verb chains. In want to get to know, the Process is the last verb (know).
 
-## Participant role
+The participant role, by contrast, is resolved against the verb the last word depends on. In I think he broke the window, the window is the Goal of broke, not the Phenomenon of think, while the sentence stays Mental.
 
-A dependency label on its own cannot say which participant role it realises: an `nsubj` is an Actor in a material clause, a Senser in a mental one, a Sayer in a verbal one. Earlier versions therefore reported an unresolved disjunction, *Participant (Actor/Senser/Carrier)*.
+Classification is lexicon-based, so verbs that cross types (have a car vs have a shower) get their most frequent reading. Treat the output as first-pass automatic coding and check agreement against hand-coded data before relying on it.
+
+Process type is computed independently of the boundary classification, so it is still recorded at pauses where Tier 1 and Tier 2 are blank — for example at a phrase boundary. This mirrors the coding scheme, where Process Expressed is a separate column from Functional Context.
+
+Participant role
+
+A dependency label on its own cannot say which participant role it realises: an nsubj is an Actor in a material clause, a Senser in a mental one, a Sayer in a verbal one. Earlier versions therefore reported an unresolved disjunction, Participant (Actor/Senser/Carrier).
 
 Process type supplies the missing half, so the role is now resolved:
 
-| Clause | Process | Role |
-|---|---|---|
-| *She climbed the mountain* | Material | Goal |
-| *I saw the change* | Mental | Phenomenon |
-| *The report mentioned the delay* | Verbal | Verbiage |
-| *There is a problem* | Existential | Existent |
-| *Online dating is convenient* | Relational | Attribute |
+Clause	Process	Role
+She climbed the mountain	Material	Goal
+I saw the change	Mental	Phenomenon
+The report mentioned the delay	Verbal	Verbiage
+There is a problem	Existential	Existent
+Online dating is convenient	Relational	Attribute
 
-The mapping comes from the realization statements in `networks/transitivity.json` of the companion [system-network-builder](https://github.com/mojtabasayyadmahernia/system-network-builder) project, which encodes Halliday & Matthiessen (2014), IFG4 ch. 5 — `material ["+Process", "+Actor"]`, `mental ["+Process", "+Senser"]`, and so on. The table is vendored into `process_participant.py` rather than imported, since the grammar engine deliberately has no dependency on spaCy; `verify_against_network()` re-derives it from a copy of the network file so the two can be checked against each other.
+The mapping comes from the realization statements in networks/transitivity.json of the companion system-network-builder project, which encodes Halliday & Matthiessen (2014), IFG4 ch. 5 — material ["+Process", "+Actor"], mental ["+Process", "+Senser"], and so on. The table is vendored into process_participant.py rather than imported, since the grammar engine deliberately has no dependency on spaCy; verify_against_network() re-derives it from a copy of the network file so the two can be checked against each other.
 
 Second participants (Goal, Phenomenon, Verbiage, Behaviour) are not in the network file, which stops at the delicacy where only the first participant is declared. Those are added by hand from IFG4 and marked as such in the module.
 
-**Inside a participant.** A pause can fall inside a participant as well as after it. In *I broke the* the parser reads *the* as the object itself, but the nominal group is unfinished: *window* is still to come. `group_progress.py` recognises a group still waiting for its head noun (*I broke the*, *I broke the very beautiful*, *the man's*) and reports a **mid-group** pause *inside* the Goal. The role comes from the slot the group occupies: after a verb it is the object (Goal, Phenomenon, Verbiage), after a copula the Attribute or Existent, after passive *by* the Actor, and after a preposition a Circumstance. A group at the start of a clause gets no role, because its Process has not been written yet.
+Inside a participant. A pause can fall inside a participant as well as after it. In I broke the the parser reads the as the object itself, but the nominal group is unfinished: window is still to come. group_progress.py recognises a group still waiting for its head noun (I broke the, I broke the very beautiful, the man's) and reports a mid-group pause inside the Goal. The role comes from the slot the group occupies: after a verb it is the object (Goal, Phenomenon, Verbiage), after a copula the Attribute or Existent, after passive by the Actor, and after a preposition a Circumstance. A group at the start of a clause gets no role, because its Process has not been written yet.
 
-| Text before the pause | Location | Role |
-|---|---|---|
-| *I broke the* | Mid-group | inside Goal |
-| *I broke the very beautiful* | Mid-group | inside Goal |
-| *I broke the very beautiful window* | Clause boundary | Goal, complete |
-| *The window was broken by the* | Mid-group | inside Actor |
-| *I sat on the* | Mid-group | inside Circumstance |
+Text before the pause	Location	Role
+I broke the	Mid-group	inside Goal
+I broke the very beautiful	Mid-group	inside Goal
+I broke the very beautiful window	Sentence boundary	Goal, complete
+The window was broken by the	Mid-group	inside Actor
+I sat on the	Mid-group	inside Circumstance
 
 Like process type, the role is computed independently of boundary type. This matters: a clause ending in an object is classified as a phrase boundary, so those clauses never reach the Tier 2 branch — and they are exactly the ones where the Goal/Phenomenon distinction is at stake.
 
-## How it works
-
-```
+How it works
 keystroke → reset timer → [threshold elapsed] → parse text up to cursor
   → process type → participant role → classify boundary
   → two-tier SFL analysis → display
-```
 
-**Boundary detection** works from spaCy dependency parsing for phrase boundaries (`pobj`, `dobj`, `attr`, noun-chunk endings).
+Boundary detection works from spaCy dependency parsing for phrase boundaries (pobj, dobj, attr, noun-chunk endings).
 
-**Clause boundaries** come from the grammar, not punctuation. A clause that is complete but not yet closed by a full stop (*The government raised taxes*, or *Although it rained,*) is reported as a clause boundary. `clause_boundary.py` judges completeness from the parse: the last word must not need anything after it (an article, a dangling preposition, a Subject), the clause must have a verb, a finite clause must have a Subject, and verbs such as *be*, *make* or *think* must have a complement. Ending a relative clause does not count, since the clause it is embedded in is still open. A sentence closed by `.` `!` `?` is still a sentence boundary — the coding scheme keeps *end sentence* and *end clause* apart.
+Sentence and clause boundaries come from the grammar, not only punctuation. A sentence that is complete but not yet closed by a full stop (Online dating gives people a much wider choice of potential partners) is reported as a sentence boundary, because that is how the hand coding treats it: end sentence marks where a sentence could end, and writers often pause there and then carry on. This holds whatever the sentence's length: The boy broke the window is a sentence boundary. The one exception is a clause that ends on its verb (connections form), which is reported as a phrase boundary because the scheme codes it as the end of the verbal group; VERB_FINAL_IS_GROUP in clause_boundary.py switches this off. A complete clause before , ; : (Although it rained,) is a clause boundary. These settings were chosen on half of the writers in the hand-coded corpus and checked on the other half, where recall of end sentence rose from 59% to 82%.
 
-**Mid-word detection** is the fiddly part. To tell "paused after a word" from "paused inside one," the app checks whether the final token is a real English word using `wordfreq` frequency thresholds with a curated whitelist for 1–3 character words, where frequency alone is unreliable.
+clause_boundary.py judges completeness from the parse: the last word must not need anything after it (an article, a dangling preposition, a Subject), the clause must have a verb, a finite clause must have a Subject, and verbs such as be, make or think must have a complement. Ending a relative clause does not count, since the clause it is embedded in is still open.
 
-**Process typing** clips the text back to the clause in progress before parsing, so the Process reported belongs to the clause being written rather than to an earlier sentence.
+Mid-word detection is the fiddly part. To tell "paused after a word" from "paused inside one," the app checks whether the final token is a real English word using wordfreq frequency thresholds with a curated whitelist for 1–3 character words, where frequency alone is unreliable.
 
-**Stats bar** tracks word count, pause count, and WPM. The WPM figure excludes time spent paused, so it reflects active writing speed rather than session length.
+Process typing clips the text back to the clause in progress before parsing, so the Process reported belongs to the clause being written rather than to an earlier sentence.
 
-Everything is logged to `history.log` with timestamps and boundary classifications which makes the app also usable as a data-collection tool for further pause research.
+Stats bar tracks word count, pause count, and WPM. The WPM figure excludes time spent paused, so it reflects active writing speed rather than session length.
 
-**Session export.** Ending a session — the *End session & save* button, or closing the window — writes two files to `sessions/`: the final text, and a CSV of writing bursts with one row per pause.
+Everything is logged to history.log with timestamps and boundary classifications which makes the app also usable as a data-collection tool for further pause research.
 
-| Column | Meaning |
-|---|---|
-| `burst` | text produced since the previous pause |
-| `pause_ms` | length of the pause that followed it |
-| `burst_chars`, `burst_ms` | size and duration of the burst |
-| `pause_location` | boundary type the pause fell at |
-| `sfl_tier1`, `sfl_tier2` | the two SFL labels above |
-| `process_type` | process type of the clause being written |
-| `participant_role` | resolved participant role of the last element |
-| `role_position` | `mid` if the pause falls inside that participant, `end` if after it |
+Session export. Ending a session — the End session & save button, or closing the window — writes two files to sessions/: the final text, and a CSV of writing bursts with one row per pause.
 
-`pause_ms` is the interval between the last keystroke of a burst and the first keystroke of the next, so a pause still open when the session ends is left empty rather than truncated. `burst` is net text: backspaces within a burst pop from it, and a burst spent revising earlier text comes out empty.
+Column	Meaning
+burst	text produced since the previous pause
+pause_ms	length of the pause that followed it
+burst_chars, burst_ms	size and duration of the burst
+pause_location	boundary type the pause fell at
+sfl_tier1, sfl_tier2	the two SFL labels above
+process_type	process type of the clause being written
+participant_role	resolved participant role of the last element
+role_position	mid if the pause falls inside that participant, end if after it
+ends_with_mark	yes if . ! ? , ; : was typed just before the pause — separates a sentence boundary before the full stop from one after it
 
-`sessions/` and `history.log` are gitignored. They contain participants' own text and keystroke timing, so they should not be committed.
+pause_ms is the interval between the last keystroke of a burst and the first keystroke of the next, so a pause still open when the session ends is left empty rather than truncated. burst is net text: backspaces within a burst pop from it, and a burst spent revising earlier text comes out empty.
 
-## Files
+sessions/ and history.log are gitignored. They contain participants' own text and keystroke timing, so they should not be committed.
 
-| File | Contents |
-|---|---|
-| `main.py` | Interface, pause timer, boundary detection, two-tier analysis |
-| `clause_boundary.py` | Clause completeness from the parse, for clause boundaries |
-| `group_progress.py` | Nominal groups in progress, and the role they will fill |
-| `process_type.py` | TRANSITIVITY process typing; clause clipping |
-| `process_participant.py` | Participant role resolution from process type |
-| `burst_logger.py` | Burst accumulation and CSV export |
-
-## Running it
-
-```bash
+Files
+File	Contents
+main.py	Interface, pause timer, boundary detection, two-tier analysis
+clause_boundary.py	Clause completeness from the parse, for clause boundaries
+group_progress.py	Nominal groups in progress, and the role they will fill
+projection.py	Which verb gives the process type (projection, clause complexes, verb chains) and which gives the role
+process_type.py	TRANSITIVITY process typing; clause clipping
+process_participant.py	Participant role resolution from process type
+burst_logger.py	Burst accumulation and CSV export
+Running it
+bash
 pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 python main.py
-```
 
 Requires Python 3.8+. Built with tkinter (bundled with Python), spaCy, and wordfreq.
 
 The participant ID and pause threshold are set in the app. The 10s default suits live feedback; for collecting burst data a lower threshold (~2s) is more usual.
 
-## Status
+Status
 
-Prototype (v0.9). Working and usable, but English-only and untested against real writers.
+Prototype (v0.12). Working and usable, but English-only and untested against real writers.
 
-Known issue: Tier 1 passes the whole text before the cursor to spaCy, so the Finite test is satisfied by any earlier clause and the label collapses to Within-Rheme after the first verb of a session. `current_clause()` in `process_type.py` is the fix. Until it is applied, `sfl_tier1` is not usable beyond the opening clause.
+Known issue: Tier 1 passes the whole text before the cursor to spaCy, so the Finite test is satisfied by any earlier clause and the label collapses to Within-Rheme after the first verb of a session. current_clause() in process_type.py is the fix. Until it is applied, sfl_tier1 is not usable beyond the opening clause.
 
 Natural next steps: that fix, a session summary view, and validation of the boundary classifier, process typing and role resolution against hand-annotated data.
