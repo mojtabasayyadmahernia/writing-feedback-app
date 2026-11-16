@@ -10,7 +10,8 @@ import wordfreq
 from burst_logger import BurstRecorder
 from process_type import clause_process_type
 from process_participant import clause_participant_role
-from clause_boundary import ends_complete_clause
+from clause_boundary import ends_complete_clause, unmarked_ending, SENTENCE, GROUP
+from group_progress import nominal_group_in_progress, CIRCUMSTANCE
 
 class WritingFeedbackApp:
     def __init__(self):
@@ -86,7 +87,7 @@ class WritingFeedbackApp:
 
         tk.Label(
             header_frame,
-            text="Prototype v0.8",
+            text="Prototype v0.11",
             font=("Arial", 9),
             fg="#7f8c8d",
             bg="#1a252f"
@@ -420,23 +421,30 @@ class WritingFeedbackApp:
         return self.POS_FALLBACK.get(last_token.pos_, f'Unknown ({last_token.pos_})')
 
     # ── Main analysis ─────────────────────────────────────────────────────
-    def analyze_linguistic_context(self, text, process=None, role=None):
+    def analyze_linguistic_context(self, text, process=None, role=None, group=None):
         """
         Analyze the text up to the cursor and determine the boundary type.
 
         Returns a tuple: (boundary_type, sfg_tier1, sfg_tier2)
         - boundary_type : 'sentence_boundary' | 'clause_boundary' |
-                          'phrase_boundary' | 'word_boundary' | 'mid_word'
+                          'phrase_boundary' | 'mid_group' |
+                          'word_boundary' | 'mid_word'
         - sfg_tier1     : Tier 1 label (only for 'word_boundary'; else None)
         - sfg_tier2     : Tier 2 label (only for 'word_boundary'; else None)
 
         `process` and `role` are passed through to Tier 2 so that
         participant disjunctions can be resolved.
 
-        'sentence_boundary' comes from the writer's own '.', '!' or '?'.
-        'clause_boundary' comes from the grammar, not punctuation: the
-        clause is complete but not closed by a full stop ('The government
-        raised taxes', or 'Although it rained,'). See clause_boundary.py.
+        'sentence_boundary' is either closed by the writer's '.', '!' or
+        '?', or a complete sentence with no mark yet ('...and behavioural
+        preferences'): the hand coding marks where a sentence COULD end.
+        'clause_boundary' is a complete clause before ',', ';' or ':'
+        ('Although it rained,'). See clause_boundary.py.
+
+        'mid_group' means the pause falls inside a nominal group whose head
+        noun has not been written yet ('I broke the', 'I broke the very
+        beautiful'). `group` is the result of nominal_group_in_progress();
+        see group_progress.py.
         """
         if not text or text.isspace():
             return 'sentence_boundary', None, None
@@ -467,9 +475,19 @@ class WritingFeedbackApp:
         if not self.is_real_word(last_token.text):
             return 'mid_word', None, None
 
-        # Clause complete without punctuation.
-        if ends_complete_clause(self.nlp, stripped):
-            return 'clause_boundary', None, None
+        # Inside a nominal group that is still waiting for its head noun.
+        # Checked before clause completeness: the parser reads 'I broke the'
+        # as a finished clause with 'the' as its object.
+        if group is not None:
+            return 'mid_group', None, None
+
+        # Complete without any punctuation: a sentence end, or the end of
+        # the clause's last group (see unmarked_ending in clause_boundary.py).
+        ending = unmarked_ending(self.nlp, stripped)
+        if ending == SENTENCE:
+            return 'sentence_boundary', None, None
+        if ending == GROUP:
+            return 'phrase_boundary', None, None
 
         # Check for phrase boundary (syntactic)
         for chunk in doc.noun_chunks:
@@ -499,20 +517,25 @@ class WritingFeedbackApp:
         'within_rheme':         'Within-Rheme pause — clause in progress',
     }
 
-    def get_boundary_display_text(self, boundary_type, tier1=None, tier2=None):
+    def get_boundary_display_text(self, boundary_type, tier1=None, tier2=None,
+                                  marked=True):
         """Return the Tier 1 (structural) display string."""
         if boundary_type == 'word_boundary' and tier1:
             return self.TIER1_DISPLAY.get(tier1, tier1)
+        if boundary_type == 'sentence_boundary' and not marked:
+            return 'Sentence boundary — sentence complete, no full stop yet'
         messages = {
             'sentence_boundary': 'Sentence boundary — sentence closed by punctuation',
-            'clause_boundary':   'Clause boundary — clause grammatically complete',
+            'clause_boundary':   'Clause boundary — complete clause before , ; :',
             'phrase_boundary':   'Pause is at a phrase boundary',
+            'mid_group':         'Mid-group pause — inside a nominal group',
             'word_boundary':     'Pause is at a word boundary',
             'mid_word':          'Pause is at a mid-word position',
         }
         return messages.get(boundary_type, 'Unknown boundary')
 
-    def get_tier2_display_text(self, boundary_type, tier2=None, process=None, role=None):
+    def get_tier2_display_text(self, boundary_type, tier2=None, process=None, role=None,
+                               role_position=None, group=None):
         """
         Return the Tier 2 (transitivity) display string.
 
@@ -522,7 +545,16 @@ class WritingFeedbackApp:
         exactly the clauses where the resolved role matters most.
         """
         parts = []
-        if boundary_type == 'word_boundary' and tier2:
+        if boundary_type == 'mid_group' and group is not None:
+            if role:
+                parts.append(f'Inside participant: {role} (nominal group not finished)')
+            elif group.element == CIRCUMSTANCE:
+                parts.append('Inside circumstance (prepositional phrase not finished)')
+            else:
+                parts.append('Inside participant — role not yet assigned (Process not yet written)')
+        elif role_position == 'mid' and role:
+            parts.append(f'Inside participant: {role}')
+        elif boundary_type == 'word_boundary' and tier2:
             parts.append(f'Last element: {tier2}')
         elif role:
             parts.append(f'Last element: Participant ({role})')
@@ -547,6 +579,7 @@ class WritingFeedbackApp:
             'clause_boundary':   '#1e8449',
             'phrase_boundary':   '#f39c12',
             'mid_word':          '#e74c3c',
+            'mid_group':         '#d35400',
         }
         return colors.get(boundary_type, '#bdc3c7')
 
@@ -625,19 +658,41 @@ class WritingFeedbackApp:
         # Both are computed before the boundary analysis so Tier 2 can use
         # them, and both are recorded even where Tier 2 comes out blank.
         process = clause_process_type(self.nlp, text_before_cursor)
-        role = clause_participant_role(self.nlp, text_before_cursor, process)
+
+        # A nominal group still waiting for its head noun ('I broke the')
+        # takes the role of the slot it is in, marked 'mid'. Otherwise the
+        # role is read off the last element written, marked 'end'.
+        group = nominal_group_in_progress(self.nlp, text_before_cursor, process)
+        if group is not None:
+            role = group.role
+            role_position = 'mid' if role else ''
+        else:
+            role = clause_participant_role(self.nlp, text_before_cursor, process)
+            role_position = 'end' if role else ''
 
         # Analyze linguistic context
         boundary_type, tier1, tier2 = self.analyze_linguistic_context(
-            text_before_cursor, process, role
+            text_before_cursor, process, role, group
         )
-        tier1_text  = self.get_boundary_display_text(boundary_type, tier1, tier2)
-        tier2_text  = self.get_tier2_display_text(boundary_type, tier2, process, role)
+        # A pause partway through a word is inside whatever role that word
+        # belongs to ('I broke the windo').
+        if boundary_type == 'mid_word' and role:
+            role_position = 'mid'
+
+        # Whether the writer had typed a mark (. ! ? , ; :) before pausing.
+        # Kept because a sentence boundary no longer implies a full stop.
+        stripped_text = text_before_cursor.rstrip()
+        marked = bool(stripped_text) and stripped_text[-1] in '.!?,;:'
+
+        tier1_text  = self.get_boundary_display_text(boundary_type, tier1, tier2, marked)
+        tier2_text  = self.get_tier2_display_text(boundary_type, tier2, process, role,
+                                                  role_position, group)
         tier1_color = self.get_boundary_color(boundary_type, tier1)
 
         # Close the burst that just ended. The pause itself is measured when
         # writing resumes.
-        self.bursts.pause_detected(boundary_type, tier1, tier2, process, role)
+        self.bursts.pause_detected(boundary_type, tier1, tier2, process, role,
+                                   role_position, marked)
 
         # Show encouragement message (red banner)
         encouragement = random.choice(self.messages)
@@ -674,7 +729,7 @@ class WritingFeedbackApp:
         if process:
             log_entry += f" | Process: {process}"
         if role:
-            log_entry += f" | Role: {role}"
+            log_entry += f" | Role: {role_position} {role}"
         log_entry += f" (threshold: {self.pause_duration // 1000}s)"
         self.write_log(log_entry)
 

@@ -30,6 +30,7 @@ When a pause is detected, three things appear:
 | Sentence boundary | Sentence closed by `.` `!` `?` |
 | Clause boundary | Clause grammatically complete, without a full stop |
 | Phrase boundary | End of a noun phrase, object, or adverbial |
+| Mid-group | Inside a nominal group whose head noun is not written yet |
 | Pre-Theme | Clause not yet begun — no Subject or Finite written |
 | Theme–Rheme boundary | Subject written, Process not yet |
 | Within-Rheme | Clause in progress |
@@ -75,6 +76,16 @@ The mapping comes from the realization statements in `networks/transitivity.json
 
 Second participants (Goal, Phenomenon, Verbiage, Behaviour) are not in the network file, which stops at the delicacy where only the first participant is declared. Those are added by hand from IFG4 and marked as such in the module.
 
+**Inside a participant.** A pause can fall inside a participant as well as after it. In *I broke the* the parser reads *the* as the object itself, but the nominal group is unfinished: *window* is still to come. `group_progress.py` recognises a group still waiting for its head noun (*I broke the*, *I broke the very beautiful*, *the man's*) and reports a **mid-group** pause *inside* the Goal. The role comes from the slot the group occupies: after a verb it is the object (Goal, Phenomenon, Verbiage), after a copula the Attribute or Existent, after passive *by* the Actor, and after a preposition a Circumstance. A group at the start of a clause gets no role, because its Process has not been written yet.
+
+| Text before the pause | Location | Role |
+|---|---|---|
+| *I broke the* | Mid-group | inside Goal |
+| *I broke the very beautiful* | Mid-group | inside Goal |
+| *I broke the very beautiful window* | Clause boundary | Goal, complete |
+| *The window was broken by the* | Mid-group | inside Actor |
+| *I sat on the* | Mid-group | inside Circumstance |
+
 Like process type, the role is computed independently of boundary type. This matters: a clause ending in an object is classified as a phrase boundary, so those clauses never reach the Tier 2 branch — and they are exactly the ones where the Goal/Phenomenon distinction is at stake.
 
 ## How it works
@@ -108,6 +119,7 @@ Everything is logged to `history.log` with timestamps and boundary classificatio
 | `sfl_tier1`, `sfl_tier2` | the two SFL labels above |
 | `process_type` | process type of the clause being written |
 | `participant_role` | resolved participant role of the last element |
+| `role_position` | `mid` if the pause falls inside that participant, `end` if after it |
 
 `pause_ms` is the interval between the last keystroke of a burst and the first keystroke of the next, so a pause still open when the session ends is left empty rather than truncated. `burst` is net text: backspaces within a burst pop from it, and a burst spent revising earlier text comes out empty.
 
@@ -119,6 +131,7 @@ Everything is logged to `history.log` with timestamps and boundary classificatio
 |---|---|
 | `main.py` | Interface, pause timer, boundary detection, two-tier analysis |
 | `clause_boundary.py` | Clause completeness from the parse, for clause boundaries |
+| `group_progress.py` | Nominal groups in progress, and the role they will fill |
 | `process_type.py` | TRANSITIVITY process typing; clause clipping |
 | `process_participant.py` | Participant role resolution from process type |
 | `burst_logger.py` | Burst accumulation and CSV export |
@@ -137,7 +150,7 @@ The participant ID and pause threshold are set in the app. The 10s default suits
 
 ## Status
 
-Prototype (v0.8). Working and usable, but English-only and untested against real writers.
+Prototype (v0.9). Working and usable, but English-only and untested against real writers.
 
 Known issue: Tier 1 passes the whole text before the cursor to spaCy, so the Finite test is satisfied by any earlier clause and the label collapses to Within-Rheme after the first verb of a session. `current_clause()` in `process_type.py` is the fix. Until it is applied, `sfl_tier1` is not usable beyond the opening clause.
 

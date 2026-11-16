@@ -1,24 +1,41 @@
 """
-Clause completeness from grammar, not punctuation.
+Clause and sentence completeness from grammar, not punctuation.
 
 The app used to recognise a boundary only from the mark the writer typed:
-'.', '!' or '?' meant a sentence boundary, and nothing else could. A clause
-that is grammatically complete but not yet punctuated -- 'The government
-raised taxes' with the cursor after 'taxes' -- was reported as a phrase or
-word boundary. The hand-coding scheme calls this 'end clause'.
+'.', '!' or '?' meant a sentence boundary, and nothing else could. A
+sentence that is grammatically complete but not yet punctuated -- 'Online
+dating gives people a wider choice of partners' with the cursor after
+'partners' -- was reported as a phrase or word boundary, although the
+hand coding calls it 'end sentence'.
 
 This module decides from the parse whether the clause the writer is in has
 been completed. It is used in two places in main.py:
 
-  * text with no closing punctuation: a complete clause is reported as
-    'clause_boundary' instead of falling through to the phrase/word tests;
   * text ending in ',', ';' or ':': a complete clause before the mark is a
     clause boundary ('Although it rained,'), anything else stays a phrase
     boundary ('In 2020,').
+  * text with no mark at all: see unmarked_ending() below. A complete
+    sentence is a sentence boundary even though no full stop has been typed
+    ('...and behavioural preferences'), because that is how the hand coding
+    treats it: 'end sentence' marks where the sentence COULD end, and
+    writers often pause there and then carry on.
 
-A sentence closed by '.', '!' or '?' is still 'sentence_boundary': that is
-the writer's own marking of the sentence, and the coding scheme keeps 'end
-sentence' and 'end clause' apart.
+How unmarked endings are labelled (v0.11)
+-----------------------------------------
+  * a complete sentence with no mark  -> sentence boundary, whatever its
+    length: 'The boy broke the window' is a sentence.
+  * ... unless it ends on its verb     -> phrase boundary
+    ('connections form': the verbal group has just ended, and the hand
+    coding codes that as 'end VP'). Set VERB_FINAL_IS_GROUP = False to
+    report these as sentence boundaries too.
+
+Checked against the hand-annotated corpus with writers split in two halves
+(rule chosen on one, checked on the other). On the held-out half, recall of
+hand 'end sentence' rose from 59% to 82%, precision of the app's sentence
+boundary was 61%, and kappa over the six location categories rose from
+0.343 to 0.408. (v0.10 also treated sentences under 8 words as phrase
+boundaries; that was dropped because a short complete sentence is still a
+sentence.)
 
 How completeness is judged
 --------------------------
@@ -36,6 +53,9 @@ How completeness is judged
    'need', 'want', projecting verbs like 'think' and 'say' -- must have one.
    'The problem is' and 'I think' are not complete clauses.
 
+This is a heuristic over a parser that sees unfinished text, so expect
+errors. Rule 4 in particular uses a short verb list rather than full
+valency information.
 """
 
 from process_type import _SENTENCE_END, _is_abbreviation
@@ -183,6 +203,35 @@ def doc_is_complete_clause(doc) -> bool:
         return False
 
     return True
+
+
+# A complete clause that ends on its verb ('connections form') is reported as
+# the end of its verbal group, as the hand coding does ('end VP'). Set to
+# False to report it as a sentence boundary instead.
+VERB_FINAL_IS_GROUP = True
+
+SENTENCE = "sentence"
+GROUP = "group"
+
+
+def unmarked_ending(nlp, text: str):
+    """
+    For text with no closing mark: what has just been completed.
+
+    Returns SENTENCE if the sentence could end here, GROUP if the clause is
+    complete but ends on its verb (see VERB_FINAL_IS_GROUP), and None if no
+    clause is complete.
+    """
+    sentence = current_sentence(text).strip()
+    if not sentence:
+        return None
+    doc = nlp(sentence)
+    if not doc_is_complete_clause(doc):
+        return None
+    last = _last_word(doc)
+    if VERB_FINAL_IS_GROUP and last.pos_ in ("VERB", "AUX"):
+        return GROUP
+    return SENTENCE
 
 
 def ends_complete_clause(nlp, text: str) -> bool:
