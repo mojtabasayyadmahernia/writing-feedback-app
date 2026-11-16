@@ -27,7 +27,8 @@ When a pause is detected, three things appear:
 
 | Label | Meaning |
 |---|---|
-| Clause boundary | Clause appears complete (ends in `.` `!` `?`) |
+| Sentence boundary | Sentence closed by `.` `!` `?` |
+| Clause boundary | Clause grammatically complete, without a full stop |
 | Phrase boundary | End of a noun phrase, object, or adverbial |
 | Pre-Theme | Clause not yet begun — no Subject or Finite written |
 | Theme–Rheme boundary | Subject written, Process not yet |
@@ -86,6 +87,8 @@ keystroke → reset timer → [threshold elapsed] → parse text up to cursor
 
 **Boundary detection** works from spaCy dependency parsing for phrase boundaries (`pobj`, `dobj`, `attr`, noun-chunk endings).
 
+**Clause boundaries** come from the grammar, not punctuation. A clause that is complete but not yet closed by a full stop (*The government raised taxes*, or *Although it rained,*) is reported as a clause boundary. `clause_boundary.py` judges completeness from the parse: the last word must not need anything after it (an article, a dangling preposition, a Subject), the clause must have a verb, a finite clause must have a Subject, and verbs such as *be*, *make* or *think* must have a complement. Ending a relative clause does not count, since the clause it is embedded in is still open. A sentence closed by `.` `!` `?` is still a sentence boundary — the coding scheme keeps *end sentence* and *end clause* apart.
+
 **Mid-word detection** is the fiddly part. To tell "paused after a word" from "paused inside one," the app checks whether the final token is a real English word using `wordfreq` frequency thresholds with a curated whitelist for 1–3 character words, where frequency alone is unreliable.
 
 **Process typing** clips the text back to the clause in progress before parsing, so the Process reported belongs to the clause being written rather than to an earlier sentence.
@@ -115,6 +118,7 @@ Everything is logged to `history.log` with timestamps and boundary classificatio
 | File | Contents |
 |---|---|
 | `main.py` | Interface, pause timer, boundary detection, two-tier analysis |
+| `clause_boundary.py` | Clause completeness from the parse, for clause boundaries |
 | `process_type.py` | TRANSITIVITY process typing; clause clipping |
 | `process_participant.py` | Participant role resolution from process type |
 | `burst_logger.py` | Burst accumulation and CSV export |
@@ -133,7 +137,7 @@ The participant ID and pause threshold are set in the app. The 10s default suits
 
 ## Status
 
-Prototype (v0.7). Working and usable, but English-only and untested against real writers.
+Prototype (v0.8). Working and usable, but English-only and untested against real writers.
 
 Known issue: Tier 1 passes the whole text before the cursor to spaCy, so the Finite test is satisfied by any earlier clause and the label collapses to Within-Rheme after the first verb of a session. `current_clause()` in `process_type.py` is the fix. Until it is applied, `sfl_tier1` is not usable beyond the opening clause.
 

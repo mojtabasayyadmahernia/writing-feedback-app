@@ -10,6 +10,7 @@ import wordfreq
 from burst_logger import BurstRecorder
 from process_type import clause_process_type
 from process_participant import clause_participant_role
+from clause_boundary import ends_complete_clause
 
 class WritingFeedbackApp:
     def __init__(self):
@@ -85,7 +86,7 @@ class WritingFeedbackApp:
 
         tk.Label(
             header_frame,
-            text="Prototype v0.7",
+            text="Prototype v0.8",
             font=("Arial", 9),
             fg="#7f8c8d",
             bg="#1a252f"
@@ -424,13 +425,18 @@ class WritingFeedbackApp:
         Analyze the text up to the cursor and determine the boundary type.
 
         Returns a tuple: (boundary_type, sfg_tier1, sfg_tier2)
-        - boundary_type : 'sentence_boundary' | 'phrase_boundary' |
-                          'word_boundary' | 'mid_word'
+        - boundary_type : 'sentence_boundary' | 'clause_boundary' |
+                          'phrase_boundary' | 'word_boundary' | 'mid_word'
         - sfg_tier1     : Tier 1 label (only for 'word_boundary'; else None)
         - sfg_tier2     : Tier 2 label (only for 'word_boundary'; else None)
 
         `process` and `role` are passed through to Tier 2 so that
         participant disjunctions can be resolved.
+
+        'sentence_boundary' comes from the writer's own '.', '!' or '?'.
+        'clause_boundary' comes from the grammar, not punctuation: the
+        clause is complete but not closed by a full stop ('The government
+        raised taxes', or 'Although it rained,'). See clause_boundary.py.
         """
         if not text or text.isspace():
             return 'sentence_boundary', None, None
@@ -445,6 +451,11 @@ class WritingFeedbackApp:
             return 'sentence_boundary', None, None
 
         if last_char in ',;:':
+            # A complete clause before the comma is a clause boundary
+            # ('Although it rained,'); anything else is a phrase boundary
+            # ('In 2020,').
+            if ends_complete_clause(self.nlp, stripped):
+                return 'clause_boundary', None, None
             return 'phrase_boundary', None, None
 
         doc = self.nlp(stripped)
@@ -455,6 +466,10 @@ class WritingFeedbackApp:
 
         if not self.is_real_word(last_token.text):
             return 'mid_word', None, None
+
+        # Clause complete without punctuation.
+        if ends_complete_clause(self.nlp, stripped):
+            return 'clause_boundary', None, None
 
         # Check for phrase boundary (syntactic)
         for chunk in doc.noun_chunks:
@@ -489,7 +504,8 @@ class WritingFeedbackApp:
         if boundary_type == 'word_boundary' and tier1:
             return self.TIER1_DISPLAY.get(tier1, tier1)
         messages = {
-            'sentence_boundary': 'Clause boundary — clause appears complete',
+            'sentence_boundary': 'Sentence boundary — sentence closed by punctuation',
+            'clause_boundary':   'Clause boundary — clause grammatically complete',
             'phrase_boundary':   'Pause is at a phrase boundary',
             'word_boundary':     'Pause is at a word boundary',
             'mid_word':          'Pause is at a mid-word position',
@@ -528,6 +544,7 @@ class WritingFeedbackApp:
             return tier1_colors.get(tier1, '#3498db')
         colors = {
             'sentence_boundary': '#27ae60',
+            'clause_boundary':   '#1e8449',
             'phrase_boundary':   '#f39c12',
             'mid_word':          '#e74c3c',
         }
