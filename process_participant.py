@@ -3,7 +3,7 @@ Resolving participant roles from process type.
 
 Tier 2 in the writing app reads a spaCy dependency label and maps it to an
 SFL function. On its own, a dependency label cannot say which participant
-role it realises: an `nsubj` is an Actor in a material clause, a Senser in
+role it realises; an nsubj is an Actor in a material clause, a Senser in
 a mental one, a Sayer in a verbal one. The app therefore emitted an
 unresolved disjunction, 'Participant (Actor/Senser/Carrier)'.
 
