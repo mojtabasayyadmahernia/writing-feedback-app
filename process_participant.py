@@ -3,7 +3,7 @@ Resolving participant roles from process type.
 
 Tier 2 in the writing app reads a spaCy dependency label and maps it to an
 SFL function. On its own, a dependency label cannot say which participant
-role it realises; an nsubj is an Actor in a material clause, a Senser in
+role it realises: an `nsubj` is an Actor in a material clause, a Senser in
 a mental one, a Sayer in a verbal one. The app therefore emitted an
 unresolved disjunction, 'Participant (Actor/Senser/Carrier)'.
 
@@ -200,4 +200,94 @@ def clause_participant_role(nlp, text: str, process: Optional[str]) -> Optional[
     doc = nlp(clause)
     if len(doc) == 0:
         return None
-    return resolve_role(doc[-1].dep_, process)
+    last = _last_word(doc)
+    if last is None:
+        return None
+    head = group_head(last)
+    if head.dep_ == "agent":
+        # 'The window was broken by the boy': the by-phrase is the Actor.
+        return FIRST_PARTICIPANT.get(process)
+    return resolve_role(head.dep_, process)
+
+
+CIRCUMSTANCE = "Circumstance"
+
+
+def clause_last_element(nlp, text: str) -> Optional[str]:
+    """
+    'Circumstance' if the clause in progress ends on a completed
+    prepositional phrase attached to the verb, else None.
+
+    'He read the book in the class': the last word 'class' is inside 'in
+    the class', which depends on 'read', so the pause comes at the end of a
+    Circumstance. 'A choice of partners' is not one: there the phrase is a
+    Qualifier inside the nominal group, and the group's participant role
+    applies (see clause_participant_role).
+
+    Prepositional phrases only. Adverbs ('quickly', 'really') are left
+    alone, because the hand coding splits them between circumstantial,
+    modal and textual adjuncts.
+    """
+    from process_type import current_clause
+
+    clause = current_clause(text).strip()
+    if not clause:
+        return None
+    doc = nlp(clause)
+    last = _last_word(doc)
+    if last is None or last.pos_ == "ADP":
+        return None          # 'in' alone: the phrase has not started
+    head = group_head(last)
+    if head.dep_ == "prep" and head.i != last.i and _is_verb(head.head) \
+            and head.head.dep_ not in NOMINAL_DEPS:
+        return CIRCUMSTANCE
+    return None
+
+
+# Relations that keep a word inside the nominal group of its head. A word
+# with one of these relations is part of a larger group, and it is the group
+# that has the participant role: in 'gives people a much wider choice of
+# potential partners', 'partners' is inside the Qualifier 'of potential
+# partners', so the role is that of 'choice' (Goal).
+GROUP_INTERNAL_DEPS = {
+    "pobj", "prep", "amod", "compound", "nmod", "poss", "det", "nummod",
+    "quantmod", "appos", "conj", "cc", "advmod", "npadvmod", "case",
+}
+
+
+def _is_verb(token) -> bool:
+    return token.pos_ in ("VERB", "AUX")
+
+
+# Verb-tagged words used as nouns (gerunds) do not stop the climb.
+NOMINAL_DEPS = {"pobj", "dobj", "nsubj", "nsubjpass", "attr", "compound",
+                "amod", "appos", "poss", "nmod", "npadvmod"}
+
+
+def _last_word(doc):
+    for token in reversed(doc):
+        if not (token.is_punct or token.is_space):
+            return token
+    return None
+
+
+def group_head(token):
+    """
+    Climb from `token` to the head of the group it belongs to, stopping
+    below the first verb. The returned token's relation to that verb is
+    what decides the participant role.
+
+    A prepositional group attached to the verb itself ('met in a cafe')
+    stops at the preposition, whose relation 'prep' is not a participant,
+    so it stays a Circumstance (no role). One attached to a noun ('a choice
+    of partners') is a Qualifier, and the climb continues to the noun.
+    """
+    t = token
+    for _ in range(40):
+        head = t.head
+        if head.i == t.i or (_is_verb(head) and head.dep_ not in NOMINAL_DEPS):
+            return t
+        if t.dep_ not in GROUP_INTERNAL_DEPS:
+            return t
+        t = head
+    return t

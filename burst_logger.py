@@ -45,6 +45,7 @@ FIELDNAMES = [
     "participant_role",
     "role_position",
     "ends_with_mark",
+    "element",
 ]
 
 
@@ -96,7 +97,7 @@ class BurstRecorder:
 
     def pause_detected(self, location, tier1=None, tier2=None,
                        process=None, role=None, role_position=None,
-                       marked=None):
+                       marked=None, element=None):
         """Call when the pause threshold fires."""
         if self._last_key_time is None:
             return  # a pause before any typing has no burst
@@ -114,6 +115,7 @@ class BurstRecorder:
             "participant_role": role or "",
             "role_position": role_position or "",
             "ends_with_mark": "" if marked is None else ("yes" if marked else "no"),
+            "element": element or "",
             "_last_key_time": self._last_key_time,
         }
 

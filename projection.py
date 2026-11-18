@@ -50,6 +50,16 @@ def _is_verb(token) -> bool:
     return token.pos_ in ("VERB", "AUX")
 
 
+# A verb-tagged word in one of these relations is a noun in use (a gerund
+# such as 'dating' in 'a problem with online dating'), not a Process.
+NOMINAL_DEPS = {"pobj", "dobj", "nsubj", "nsubjpass", "attr", "compound",
+                "amod", "appos", "poss", "nmod", "npadvmod"}
+
+
+def _is_clause_verb(token) -> bool:
+    return _is_verb(token) and token.dep_ not in NOMINAL_DEPS
+
+
 def classify_verb(doc, verb) -> str:
     """Process type of a given verb (get_process_type() picks the ROOT)."""
     lemma = verb.lemma_.lower()
@@ -170,8 +180,8 @@ def role_process_type(nlp, text: str) -> Optional[str]:
         return None
     g = last
     for _ in range(40):
-        if g is None or _is_verb(g) or g.head.i == g.i:
+        if g is None or _is_clause_verb(g) or g.head.i == g.i:
             break
         g = g.head
-    verb = g if g is not None and _is_verb(g) else root
+    verb = g if g is not None and _is_clause_verb(g) else root
     return classify_verb(doc, verb)

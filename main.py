@@ -9,7 +9,7 @@ import wordfreq
 
 from burst_logger import BurstRecorder
 from projection import sentence_process_type, role_process_type
-from process_participant import clause_participant_role
+from process_participant import clause_participant_role, clause_last_element
 from clause_boundary import ends_complete_clause, unmarked_ending, SENTENCE, GROUP
 from group_progress import nominal_group_in_progress, CIRCUMSTANCE
 
@@ -87,7 +87,7 @@ class WritingFeedbackApp:
 
         tk.Label(
             header_frame,
-            text="Prototype v0.12",
+            text="Prototype v0.14",
             font=("Arial", 9),
             fg="#7f8c8d",
             bg="#1a252f"
@@ -535,7 +535,7 @@ class WritingFeedbackApp:
         return messages.get(boundary_type, 'Unknown boundary')
 
     def get_tier2_display_text(self, boundary_type, tier2=None, process=None, role=None,
-                               role_position=None, group=None):
+                               role_position=None, group=None, element=None):
         """
         Return the Tier 2 (transitivity) display string.
 
@@ -558,6 +558,8 @@ class WritingFeedbackApp:
             parts.append(f'Last element: {tier2}')
         elif role:
             parts.append(f'Last element: Participant ({role})')
+        elif element == 'circumstance':
+            parts.append('Last element: Circumstance (prepositional phrase complete)')
         # Only append the process type when the last element is not itself
         # the Process, so the label does not read 'Process (Verbal) ·
         # Process: Verbal'.
@@ -677,13 +679,26 @@ class WritingFeedbackApp:
             role = clause_participant_role(self.nlp, text_before_cursor, role_process)
             role_position = 'end' if role else ''
 
+        # What kind of element the pause falls in or after: a participant
+        # (role above) or a Circumstance ('he read the book in the class').
+        if role:
+            element = 'participant'
+        elif group is not None and group.element == CIRCUMSTANCE:
+            element = 'circumstance'
+            role_position = 'mid'
+        elif group is None and clause_last_element(self.nlp, text_before_cursor):
+            element = 'circumstance'
+            role_position = 'end'
+        else:
+            element = ''
+
         # Analyze linguistic context
         boundary_type, tier1, tier2 = self.analyze_linguistic_context(
             text_before_cursor, process, role, group
         )
         # A pause partway through a word is inside whatever role that word
         # belongs to ('I broke the windo').
-        if boundary_type == 'mid_word' and role:
+        if boundary_type == 'mid_word' and (role or element):
             role_position = 'mid'
 
         # Whether the writer had typed a mark (. ! ? , ; :) before pausing.
@@ -693,13 +708,13 @@ class WritingFeedbackApp:
 
         tier1_text  = self.get_boundary_display_text(boundary_type, tier1, tier2, marked)
         tier2_text  = self.get_tier2_display_text(boundary_type, tier2, process, role,
-                                                  role_position, group)
+                                                  role_position, group, element)
         tier1_color = self.get_boundary_color(boundary_type, tier1)
 
         # Close the burst that just ended. The pause itself is measured when
         # writing resumes.
         self.bursts.pause_detected(boundary_type, tier1, tier2, process, role,
-                                   role_position, marked)
+                                   role_position, marked, element)
 
         # Show encouragement message (red banner)
         encouragement = random.choice(self.messages)
